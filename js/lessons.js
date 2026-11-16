@@ -146,6 +146,7 @@ export const LESSONS = [
         title: "Low and high, not left and right",
         html: `<p>On a piano we don't say left and right. We say <b>low</b> and <b>high</b>.</p>
                <p>Keys to the left sound <b>lower</b>, keys to the right sound <b>higher</b>. Moving right is going <b>up</b> the keyboard; moving left is going <b>down</b>.</p>
+               <p>The ends of the keyboard are the <b>bottom</b> (lowest keys, far left) and the <b>top</b> (highest keys, far right) — e.g. "the bottom note", "top C".</p>
                <div class="lowhigh"><span>← lower · down</span><span>up · higher →</span></div>`,
         visual: h => kbVisual(h, { labels: "c" }),
       },
