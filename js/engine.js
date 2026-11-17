@@ -55,7 +55,7 @@ export function checkRound(sum, crit) {
     const acc = sum.n ? sum.correct / sum.n : 0;
     checks.push({ name: "Accuracy", ok: acc >= crit.acc, val: Math.round(acc * 100) + "%", goal: "≥ " + Math.round(crit.acc * 100) + "%" });
     if (crit.maxMs) checks.push({ name: crit.timeName || "Avg time", ok: sum.avgMs != null && sum.avgMs <= crit.maxMs,
-      val: sum.avgMs != null ? (crit.timeName ? Math.round(sum.avgMs) + " ms" : secs(sum.avgMs)) : "–",
+      val: sum.avgMs != null ? (crit.timeName ? Math.round(sum.avgMs) + " ms" : (sum.avgMs / 1000).toFixed(2) + "s") : "–",
       goal: "≤ " + (crit.timeName ? crit.maxMs + " ms" : secs(crit.maxMs)) });
     if (crit.minBpm) checks.push({ name: "Tempo", ok: (sum.bpm || 0) >= crit.minBpm, val: (sum.bpm || "?") + " bpm", goal: "≥ " + crit.minBpm });
   }
