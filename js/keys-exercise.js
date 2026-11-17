@@ -17,12 +17,14 @@ export function runKeysExercise(root, level, nav) {
   let labels = level.labels || "c";
   let cleanup = [];
 
+  let roundId = 0;
   function startRound() {
     cleanup.forEach(f => f()); cleanup = [];
+    const myRound = ++roundId;
     const focus = topHard(es, 3, level.itemKeys ? level.itemKeys(lo, hi) : null);
     const round = { i: 0, log: [], prev: null, focus };
     root.innerHTML = `
-      <div class="progress"><span class="ptxt"></span><div class="bar"><div></div></div></div>
+      <div class="progress"><span class="ptxt"></span><div class="bar"><div></div></div><button class="mini restart" data-shortcut="restart" title="Start this round again">↺ Restart</button></div>
       <div class="card task">
         <div class="handviz"></div>
         <div class="prompt"></div>
@@ -107,7 +109,7 @@ export function runKeysExercise(root, level, nav) {
       const fb = q(".feedback"); fb.className = "feedback ok"; fb.textContent = "✓ Well done";
       q(".chips").innerHTML = chipHtml();
       round.i++;
-      setTimeout(() => { if (round.i < tasksPerRound) nextTask(); else endRound(); }, 750);
+      setTimeout(() => { if (myRound !== roundId) return; if (round.i < tasksPerRound) nextTask(); else endRound(); }, 750);
     }
 
     function press(m) {
@@ -155,11 +157,12 @@ export function runKeysExercise(root, level, nav) {
     }
 
     cleanup.push(onNote(press));
+    q(".restart").onclick = startRound;
     nextTask();
   }
 
   startRound();
-  return () => cleanup.forEach(f => f());
+  return () => { roundId++; cleanup.forEach(f => f()); };
 }
 
 function hintFor(L) {

@@ -13,12 +13,14 @@ export function runNotesExercise(root, level, nav) {
   let timer = null, alive = true;
 
   let roundCleanup = () => {};
+  let roundId = 0;
   function startRound() {
     clearInterval(timer); roundCleanup();
+    const myRound = ++roundId;
     const size = store.settings.roundSize;
     const round = { i: 0, log: [], prev: null, focus: topHard(es, 3, level.keys), endAt: level.timed ? Date.now() + 60000 : null };
     root.innerHTML = `
-      <div class="progress"><span class="ptxt"></span><div class="bar"><div></div></div></div>
+      <div class="progress"><span class="ptxt"></span><div class="bar"><div></div></div><button class="mini restart" data-shortcut="restart" title="Start this round again">↺ Restart</button></div>
       <div class="card staff"></div>
       <div class="feedback">&nbsp;</div>
       <div class="namedock"><div class="keys"></div><div class="kbtip">⌨️ You can also type C D E F G A B</div></div>`;
@@ -74,7 +76,7 @@ export function runNotesExercise(root, level, nav) {
       }
       round.i++;
       setTimeout(() => {
-        if (!alive) return;
+        if (!alive || myRound !== roundId) return;
         if (level.timed ? Date.now() < round.endAt : round.i < size) show(); else end();
       }, ok ? 450 : 1400);
     }
@@ -95,6 +97,7 @@ export function runNotesExercise(root, level, nav) {
       };
       timer = setInterval(tick, 250); tick();
     }
+    q(".restart").onclick = startRound;
     show();
   }
 

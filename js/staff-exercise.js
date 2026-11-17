@@ -34,7 +34,7 @@ export function runStaffExercise(root, level, nav) {
     const focus = topHard(es, 3, level.itemKeys());
     const round = { i: 0, log: [], prev: null, focus, devs: [], missed: 0 };
     root.innerHTML = `
-      <div class="progress"><span class="ptxt"></span><div class="bar"><div></div></div></div>
+      <div class="progress"><span class="ptxt"></span><div class="bar"><div></div></div><button class="mini restart" data-shortcut="restart" title="Start this round again">↺ Restart</button></div>
       ${tempo ? `<div class="tempobar"><span class="muted">Tempo</span><div class="seg bpm"></div></div>` : ""}
       <div class="card staff"></div>
       <div class="sub center"></div>
@@ -214,6 +214,7 @@ export function runStaffExercise(root, level, nav) {
     }
 
     cleanup.push(onNote(press));
+    q(".restart").onclick = () => { beatState = null; startRound(); };
     nextTask();
     if (tempo) { const sb = q(".startbtn"); sb.onclick = startMeasure; sb.dataset.shortcut = "primary"; }
   }

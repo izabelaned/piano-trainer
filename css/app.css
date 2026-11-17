@@ -167,7 +167,7 @@ ul.ins { margin:0; padding-left:18px; font-size:.92rem; line-height:1.5; }
 body.midi-on .sc { display:inline-block; }
 .level .sc { display:none !important; }
 body.midi-on .level.rec .sc { display:block !important; margin:4px 0 0; color:var(--accent); }
-.iconbtn .sc { display:none !important; }
+.top [data-shortcut="back"] .sc { font-size:.62rem; margin-left:4px; vertical-align:middle; }
 .sc-fired { outline:3px solid #e9a23b; }
 .sctable td { padding:6px 4px; font-size:.88rem; }
 
@@ -186,3 +186,5 @@ body.midi-on .level.rec .sc { display:block !important; margin:4px 0 0; color:va
 .key.white.pos { background:#fbe9d0; }
 .key .fnum { position:absolute; bottom:22px; left:50%; transform:translateX(-50%); width:18px; height:18px; border-radius:50%;
   background:var(--accent); color:#fff; font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; pointer-events:none; }
+.progress .restart { padding:4px 10px; font-size:.78rem; }
+.progress .restart .sc { margin-left:4px; }

@@ -34,6 +34,7 @@ export function comboKeys() {
     primary: [c + 6, c + 8, c + 10],            // F# G# A# at the bottom
     secondary: [c + 1, c + 3],                  // C# D# at the bottom
     back: [t + 6, t + 8, t + 10],               // F# G# A# at the top
+    restart: [t + 1, t + 3],                    // C# D# at the top
   };
 }
 export const comboName = action => comboKeys()[action].map(nameOf).join(" ");

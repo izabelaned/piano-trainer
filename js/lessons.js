@@ -182,7 +182,7 @@ export const LESSONS = [
                <button class="primary ghost" data-act="midi">🎹 Connect piano (MIDI)</button>
                <p class="muted midistatus"></p>
                <p class="muted">The app can check <i>which key</i> you played, but not which finger — that part is on your honour.</p>
-               <p class="muted"><b>Piano shortcuts:</b> once connected, press 3 black keys together instead of tapping buttons — the low F♯ G♯ A♯ group for “Next”, the low C♯ D♯ pair for “Another round”, the top F♯ G♯ A♯ group for “Back”. Each button shows its chord.</p>`,
+               <p class="muted"><b>Piano shortcuts:</b> once connected, press 3 black keys together instead of tapping buttons — the low F♯ G♯ A♯ group for “Next”, the low C♯ D♯ pair for “Another round”, the top F♯ G♯ A♯ group for “Back”, the top C♯ D♯ pair to restart a round. Each button shows its chord.</p>`,
         visual: (h, root) => {
           const st = root.querySelector(".midistatus");
           const show = () => st.textContent = midiStatusText();

@@ -195,7 +195,8 @@ function settings(back) {
     <div class="card setting"><b>Piano shortcuts</b><p class="muted">Press 3 black keys together (2 for “another round”) instead of touching the screen. They follow your keyboard size and only work for buttons that are on screen.</p>
       <table class="sctable"><tr><td>Next / Continue / Start</td><td><b>${comboName("primary")}</b></td></tr>
       <tr><td>Another round / previous step</td><td><b>${comboName("secondary")}</b></td></tr>
-      <tr><td>Back to lessons</td><td><b>${comboName("back")}</b></td></tr></table></div>
+      <tr><td>Back (← top left)</td><td><b>${comboName("back")}</b></td></tr>
+      <tr><td>Restart the round</td><td><b>${comboName("restart")}</b></td></tr></table></div>
     <div class="card setting"><b>Keyboard size</b><p class="muted">Must match your real piano — exercises count keys from the bottom.</p>
       ${seg("size", Object.keys(SIZES).map(n => [n, n]), s.size)}</div>
     <div class="card setting"><b>On-screen keyboard</b>${seg("zoom", [["fit", "Whole keyboard"], ["large", "Large keys (scroll)"]], s.zoom === "large" ? "large" : "fit")}</div>
