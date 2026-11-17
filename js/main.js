@@ -43,10 +43,10 @@ function nextOf(L, lv) {
   return { label: `Next level: ${nx.lv.id} ${nx.lv.title} →`, go: () => exercise(nx.L, nx.lv) };
 }
 
-// Rounds played before the criteria existed count if they meet them.
+// Recount passing rounds whenever the criteria change (v2: whole-second rounding).
 ALL.forEach(({ lv }) => {
   const es = store.ex[lv.id];
-  if (es && es.passCount == null) recount(es, criteriaFor(lv));
+  if (es && es.critV !== 2) { recount(es, criteriaFor(lv)); es.critV = 2; }
 });
 save();
 
