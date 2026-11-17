@@ -8,6 +8,7 @@ import { svgEl, drawMeasure, colorChord } from "./staff.js";
 import { finishRound, topHard } from "./engine.js";
 import { renderResults } from "./results.js";
 import { schedule, audio } from "./metronome.js";
+import { positionKeys } from "./lessons.js";
 
 const LABEL_CYCLE = ["none", "c", "all"];
 const LABEL_NAMES = { c: "C labels", none: "no labels", all: "all labels" };
@@ -84,6 +85,12 @@ export function runStaffExercise(root, level, nav) {
       if (!tempo) { colorChord(groups[0], task.elems.length > 1 ? C.cur : C.ink); fb("", "&nbsp;"); tLast = performance.now(); }
       else { locked = true; fb("", round.i === 0 ? "Press Start, listen to 4 clicks, then play one note per click." : "&nbsp;"); }
       kb.scrollTo(task.elems[0].midis[0]);
+      // New hand position: show the 5 keys with finger numbers until you start playing.
+      if (task.pos && task.pos.moved) {
+        const map = {};
+        positionKeys(task.pos.thumb).forEach((k, i) => { map[midiOfKey(k)] = i + 1; });
+        kb.showFingers(map);
+      } else kb.showFingers({});
     }
 
     // ---------- untimed ----------
@@ -182,6 +189,7 @@ export function runStaffExercise(root, level, nav) {
 
     function press(m) {
       q(".pressed").textContent = nameOf(m);
+      if (Object.keys(kb.fingers).length) kb.showFingers({});
       if (tempo) pressTempo(m);
       else if (!locked) pressUntimed(m);
     }

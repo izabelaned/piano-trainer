@@ -404,6 +404,7 @@ function singleTask(ctx, fingering) {
   const k = KEYS[j], f = j - st.p + 1;
   const where = `Hand position: thumb on <b>${KEYS[st.p]}</b>`;
   return {
+    pos: { thumb: st.p, moved },
     elems: [{ keys: [k], item: k, finger: fingering ? f : null }],
     sub: (moved ? `<span class="handline">↔ ${where}</span>` : `<span class="muted">${where}</span>`) +
          (fingering ? ` · <b>${handWords("R", f)}</b>` : ""),
@@ -414,12 +415,13 @@ function singleTask(ctx, fingering) {
 function phraseTask(ctx, starts) {
   const options = starts.map(k => KEYS.indexOf(k));
   const p = choosePos(ctx, options);
+  const moved = ctx.state.p !== p; ctx.state.p = p;
   const elems = []; let last = null;
   for (let i = 0; i < 4; i++) {
     const j = nextInPos(ctx, p, last); last = j;
     elems.push({ keys: [KEYS[j]], item: KEYS[j], finger: j - p + 1 });
   }
-  return { elems, sub: `Thumb on <b>${KEYS[p]}</b> · fingers 1–5 on ${KEYS.slice(p, p + 5).join(" ")}` };
+  return { pos: { thumb: p, moved }, elems, sub: `Thumb on <b>${KEYS[p]}</b> · fingers 1–5 on ${KEYS.slice(p, p + 5).join(" ")}` };
 }
 
 // 3.4: steps and leaps across the whole range, continuing from the previous phrase.
@@ -438,8 +440,9 @@ function leapTask(ctx) {
 // 3.6 / 3.7: double notes that fit one hand position, with fingering, moving smoothly.
 function dyadTask(ctx, count) {
   const st = ctx.state;
+  let moved = false;
   if (st.p == null || (st.n >= 4 && Math.random() < 0.35)) {
-    st.p = choosePos(ctx, range(0, MAX_THUMB), st.p); st.n = 0; st.last = null;
+    st.p = choosePos(ctx, range(0, MAX_THUMB), st.p); st.n = 0; st.last = null; moved = true;
   }
   const elems = [];
   for (let i = 0; i < count; i++) {
@@ -450,8 +453,10 @@ function dyadTask(ctx, count) {
     st.last = a; st.n++;
     elems.push({ keys: [KEYS[a], KEYS[b]], item: KEYS[a] + "+" + KEYS[b], finger: [a - st.p + 1, b - st.p + 1] });
   }
-  return { elems, sub: `Thumb on <b>${KEYS[st.p]}</b> · both notes together, fingers written above` };
+  return { pos: { thumb: st.p, moved }, elems, sub: `Thumb on <b>${KEYS[st.p]}</b> · both notes together, fingers written above` };
 }
+
+export const positionKeys = p => KEYS.slice(p, p + 5);
 
 function range(a, b) { const r = []; for (let i = a; i <= b; i++) r.push(i); return r; }
 

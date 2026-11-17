@@ -9,6 +9,7 @@ export class Keyboard {
     this.container = container;
     this.opts = Object.assign({ labels: "c", fit: null }, opts);
     this.state = {};   // midi -> persistent class
+    this.fingers = {}; // midi -> finger number shown on the key
     this.wrap = document.createElement("div");
     this.wrap.className = "kb-scroll";
     this.el = document.createElement("div");
@@ -59,6 +60,7 @@ export class Keyboard {
       if (lab) { const s = document.createElement("span"); s.className = "lab"; s.innerHTML = lab; k.appendChild(s); }
       if (m === MIDDLE_C) k.classList.add("middle");
       if (this.state[m]) k.classList.add(this.state[m]);
+      if (this.fingers[m]) { k.classList.add("pos"); const f = document.createElement("span"); f.className = "fnum"; f.textContent = this.fingers[m]; k.appendChild(f); }
       k.addEventListener("pointerdown", e => { e.preventDefault(); emitNote(m, "screen"); });
       this.el.appendChild(k);
       this.keys[m] = k;
@@ -78,6 +80,16 @@ export class Keyboard {
   }
 
   setLabels(mode) { this.opts.labels = mode; this.render(); }
+
+  // Show where the hand sits: { midi: fingerNumber }. Pass {} to clear.
+  showFingers(map) {
+    this.fingers = map || {};
+    Object.entries(this.keys).forEach(([m, k]) => {
+      k.classList.toggle("pos", !!this.fingers[m]);
+      const old = k.querySelector(".fnum"); if (old) old.remove();
+      if (this.fingers[m]) { const f = document.createElement("span"); f.className = "fnum"; f.textContent = this.fingers[m]; k.appendChild(f); }
+    });
+  }
 
   // Persistent highlight (e.g. a found key). cls null clears it.
   set(m, cls) {
