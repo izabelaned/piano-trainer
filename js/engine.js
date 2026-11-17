@@ -43,7 +43,32 @@ export function aggregate(log) {
 }
 
 // Save a finished round; returns { summary, per, prevRound, prevItems }.
-export function finishRound(es, log, { passAcc = 0.9, focus = [], score = null } = {}) {
+export const PASS_ROUNDS = 3;
+const secs = ms => (ms / 1000).toFixed(1) + "s";
+
+// Check one round summary against a level's criteria.
+export function checkRound(sum, crit) {
+  const checks = [];
+  if (crit.minScore != null) {
+    checks.push({ name: "Score", ok: (sum.score || 0) >= crit.minScore, val: String(sum.score || 0), goal: "≥ " + crit.minScore });
+  } else {
+    const acc = sum.n ? sum.correct / sum.n : 0;
+    checks.push({ name: "Accuracy", ok: acc >= crit.acc, val: Math.round(acc * 100) + "%", goal: "≥ " + Math.round(crit.acc * 100) + "%" });
+    if (crit.maxMs) checks.push({ name: crit.timeName || "Avg time", ok: sum.avgMs != null && sum.avgMs <= crit.maxMs,
+      val: sum.avgMs != null ? (crit.timeName ? Math.round(sum.avgMs) + " ms" : secs(sum.avgMs)) : "–",
+      goal: "≤ " + (crit.timeName ? crit.maxMs + " ms" : secs(crit.maxMs)) });
+    if (crit.minBpm) checks.push({ name: "Tempo", ok: (sum.bpm || 0) >= crit.minBpm, val: (sum.bpm || "?") + " bpm", goal: "≥ " + crit.minBpm });
+  }
+  return { pass: checks.every(c => c.ok), checks };
+}
+
+// Count passing rounds from history (used once for rounds played before criteria existed).
+export function recount(es, crit) {
+  es.passCount = es.rounds.filter(r => checkRound(r, crit).pass).length;
+  es.passed = es.passCount >= PASS_ROUNDS;
+}
+
+export function finishRound(es, log, { criteria, focus = [], score = null, bpm = null } = {}) {
   const per = aggregate(log);
   const prevRound = es.rounds[es.rounds.length - 1] || null;
   const prevItems = JSON.parse(JSON.stringify(es.items));
@@ -59,10 +84,14 @@ export function finishRound(es, log, { passAcc = 0.9, focus = [], score = null }
     d.seen = (d.seen || 0) + p.seen;
   });
 
-  const summary = { date: Date.now(), n: log.length, correct: clean, avgMs, focus, score };
+  const summary = { date: Date.now(), n: log.length, correct: clean, avgMs, focus, score, bpm };
+  const verdict = checkRound(summary, criteria);
+  summary.pass = verdict.pass;
+  summary.checks = verdict.checks;
   es.rounds.push(summary);
   if (es.rounds.length > 60) es.rounds.shift();
-  if (log.length && clean / log.length >= passAcc) es.passed = true;
+  es.passCount = (es.passCount || 0) + (verdict.pass ? 1 : 0);
+  es.passed = es.passCount >= PASS_ROUNDS;
   if (score != null) es.best = Math.max(es.best || 0, score);
   return { summary, per, prevRound, prevItems };
 }

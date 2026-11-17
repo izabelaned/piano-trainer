@@ -122,7 +122,7 @@ export const LESSONS = [
   {
     id: "1",
     title: "The keyboard",
-    blurb: "Find any key, count from the bottom, finger numbers.",
+    blurb: "Find any key by its name (F3, C4…), finger numbers.",
     steps: [
       {
         title: "White keys and black keys",
@@ -197,7 +197,8 @@ export const LESSONS = [
                <p>To use your digital piano: connect its <b>USB to Host</b> port to your phone or laptop (on a phone you need an OTG adapter), open this app in <b>Chrome</b>, and press the button. The app will hear every key you press.</p>
                <button class="primary ghost" data-act="midi">🎹 Connect piano (MIDI)</button>
                <p class="muted midistatus"></p>
-               <p class="muted">The app can check <i>which key</i> you played, but not which finger — that part is on your honour.</p>`,
+               <p class="muted">The app can check <i>which key</i> you played, but not which finger — that part is on your honour.</p>
+               <p class="muted"><b>Piano shortcuts:</b> once connected, press 3 black keys together instead of tapping buttons — the low F♯ G♯ A♯ group for “Next”, the low C♯ D♯ pair for “Another round”, the top F♯ G♯ A♯ group for “Back”. Each button shows its chord.</p>`,
         visual: (h, root) => {
           const st = root.querySelector(".midistatus");
           const show = () => st.textContent = midiStatusText();
@@ -284,8 +285,8 @@ export const LESSONS = [
       },
     ],
     levels: [
-      { id: "2.1", type: "notes", title: "Line notes", desc: "E G B D F only.", keys: ["E4", "G4", "B4", "D5", "F5"] },
-      { id: "2.2", type: "notes", title: "Space notes", desc: "F A C E only.", keys: ["F4", "A4", "C5", "E5"] },
+      { id: "2.1", type: "notes", title: "Line notes", desc: "E G B D F only.", pass: { maxMs: 1500 }, keys: ["E4", "G4", "B4", "D5", "F5"] },
+      { id: "2.2", type: "notes", title: "Space notes", desc: "F A C E only.", pass: { maxMs: 1500 }, keys: ["F4", "A4", "C5", "E5"] },
       { id: "2.3", type: "notes", title: "The whole staff", desc: "E4 to F5, lines and spaces.", keys: TREBLE.filter(n => n.step >= 0 && n.step <= 8).map(n => n.key) },
       { id: "2.4", type: "notes", title: "With ledger lines", desc: "Full range B3 to B5.", keys: TREBLE.map(n => n.key) },
       { id: "2.5", type: "notes", title: "60-second challenge", desc: "How many can you name in a minute? Pass: 25.", keys: TREBLE.map(n => n.key), timed: true },
@@ -369,10 +370,10 @@ export const LESSONS = [
         }, itemKeys: () => KEYS },
       { id: "3.5", type: "staff", tempo: true, title: "In time (4/4)", desc: "4 notes, one per metronome click.", tasks: 6,
         make: ctx => positionTask(ctx, ["C4", "D4", "E4", "F4", "G4", "A4"]), itemKeys: () => KEYS },
-      { id: "3.6", type: "staff", title: "Double notes", desc: "Two notes together, one chord at a time.", tasks: 10,
+      { id: "3.6", type: "staff", title: "Double notes", desc: "Two notes together, one chord at a time.", tasks: 10, pass: { maxMs: 3500 },
         make: ctx => { const k = pick(ctx.es, DYADS, ctx.prev); return { elems: [{ keys: k.split("+"), item: k }], sub: "Both notes together, right hand." }; },
         itemKeys: () => DYADS },
-      { id: "3.7", type: "staff", tempo: true, title: "Double notes in time", desc: "4 double notes in 4/4. Start slow.", tasks: 6,
+      { id: "3.7", type: "staff", tempo: true, title: "Double notes in time", desc: "4 double notes in 4/4.", tasks: 6, pass: { maxMs: 200 },
         make: ctx => {
           const elems = []; let prev = ctx.prev;
           for (let i = 0; i < 4; i++) { const k = pick(ctx.es, DYADS, prev); elems.push({ keys: k.split("+"), item: k }); prev = k; }

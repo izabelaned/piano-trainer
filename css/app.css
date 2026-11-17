@@ -147,3 +147,26 @@ ul.ins { margin:0; padding-left:18px; font-size:.92rem; line-height:1.5; }
   .kbdock { padding:4px 8px 6px; }
   .tempobar { margin-bottom:4px; }
 }
+
+/* pass criteria + shortcuts */
+.level.locked { opacity:.5; cursor:not-allowed; }
+.level small.prog { color:var(--accent); }
+.level.passed small.prog { color:var(--ok); }
+.verdict .vhead { font-weight:700; margin-bottom:8px; }
+.verdict.ok .vhead { color:var(--ok); } .verdict.no .vhead { color:var(--bad); }
+.checks { display:flex; flex-wrap:wrap; gap:8px; }
+.check { flex:1; min-width:120px; border:1px solid var(--line); border-radius:12px; padding:8px 10px; display:flex; flex-direction:column; }
+.check.ok { border-color:#9cc9ad; background:#f1f8f4; } .check.no { border-color:#e6b3ac; background:#fcf2f1; }
+.check span { font-size:.82rem; } .check b { font-size:1.15rem; } .check small { color:var(--muted); font-size:.75rem; }
+.passdots { display:flex; align-items:center; gap:6px; margin-top:10px; font-size:.85rem; }
+.passdots > span:not(:last-child) { width:14px; height:14px; border-radius:50%; background:var(--line); }
+.passdots > span.on { background:var(--ok); }
+.passdots > span:last-child { margin-left:4px; }
+.actions .primary { margin-top:8px; }
+.sc { display:none; font-size:.72rem; font-weight:500; opacity:.85; margin-left:8px; white-space:nowrap; }
+body.midi-on .sc { display:inline-block; }
+.level .sc { display:none !important; }
+body.midi-on .level.rec .sc { display:block !important; margin:4px 0 0; color:var(--accent); }
+.iconbtn .sc { display:none !important; }
+.sc-fired { outline:3px solid #e9a23b; }
+.sctable td { padding:6px 4px; font-size:.88rem; }

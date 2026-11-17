@@ -1,5 +1,5 @@
 // Results screen shared by all exercises.
-import { topHard } from "./engine.js";
+import { topHard, PASS_ROUNDS } from "./engine.js";
 
 const sec = ms => (ms / 1000).toFixed(1) + "s";
 
@@ -19,19 +19,19 @@ export function renderResults(root, opts) {
   const prevAcc = prevRound && prevRound.n ? Math.round(prevRound.correct / prevRound.n * 100) : null;
 
   let html = "";
-  if (sum.score != null) {
-    html += `<div class="card"><div class="big">
-      <div><b>${sum.score}</b><span>correct in 60s${delta(sum.score, prevRound && prevRound.score, false, x => x)}</span></div>
-      <div><b>${es.best}</b><span>best</span></div>
-      <div><b>${sum.avgMs ? sec(sum.avgMs) : "–"}</b><span>avg time</span></div></div></div>`;
-  } else {
-    html += `<div class="card"><div class="big">
-      <div><b>${sum.correct}/${sum.n}</b><span>${opts.unitWord || "clean"}${delta(acc, prevAcc, false, x => Math.round(x) + "%")}</span></div>
+  const checks = sum.checks || [];
+  const dots = Array.from({ length: PASS_ROUNDS }, (_, i) => `<span class="${i < Math.min(es.passCount || 0, PASS_ROUNDS) ? "on" : ""}"></span>`).join("");
+  html += `<div class="card verdict ${sum.pass ? "ok" : "no"}">
+    <div class="vhead">${sum.pass ? "✓ Passing round" : "✗ Not a passing round yet"}</div>
+    <div class="checks">${checks.map(c => `<div class="check ${c.ok ? "ok" : "no"}"><span>${c.ok ? "✓" : "✗"} ${c.name}</span><b>${c.val}</b><small>goal ${c.goal}</small></div>`).join("")}</div>
+    <div class="passdots">${dots}<span>${Math.min(es.passCount || 0, PASS_ROUNDS)} / ${PASS_ROUNDS} passing rounds${es.passed ? " — <b>level passed ✓</b>" : ""}</span></div>
+  </div>`;
+  html += `<div class="actions"></div>`;
+  html += `<div class="card"><div class="big">
+      ${sum.score != null ? `<div><b>${sum.score}</b><span>correct in 60s${delta(sum.score, prevRound && prevRound.score, false, x => x)}</span></div><div><b>${es.best}</b><span>best</span></div>`
+        : `<div><b>${sum.correct}/${sum.n}</b><span>${opts.unitWord || "clean"}${delta(acc, prevAcc, false, x => Math.round(x) + "%")}</span></div>`}
       <div><b>${sum.avgMs ? sec(sum.avgMs) : "–"}</b><span>${opts.timeLabel || "avg time"}${delta(sum.avgMs, prevRound && prevRound.avgMs, true, sec)}</span></div>
-      <div><b>${es.rounds.length}</b><span>round</span></div></div>
-      ${es.passed ? `<div class="passline">✓ Level passed (90%+ clean). You can move on — or keep polishing.</div>`
-                  : `<div class="passline muted">Pass this level with 90%+ clean answers in a round.</div>`}</div>`;
-  }
+      <div><b>${es.rounds.length}</b><span>rounds played</span></div></div></div>`;
 
   // focus notes from last round
   if (sum.focus && sum.focus.length) {
@@ -76,7 +76,6 @@ export function renderResults(root, opts) {
   if (next.length) html += `<h2>Next round will focus on</h2><div class="card">${next.map(k => `<span class="tag">${label(k)}</span>`).join("")}
     <div class="muted" style="margin-top:6px">These show up more often. Easy ones still appear sometimes so you don't forget them.</div></div>`;
 
-  html += `<button class="primary" data-act="next">${opts.nextTitle || "Next round"}</button>`;
 
   const hist = es.rounds.slice(-8);
   if (hist.length > 1) {
@@ -87,8 +86,24 @@ export function renderResults(root, opts) {
   html += `<button class="linkbtn" data-act="home">Back to lessons</button>`;
 
   root.innerHTML = html;
-  root.querySelector('[data-act="next"]').onclick = opts.onNext;
   root.querySelector('[data-act="home"]').onclick = opts.onHome;
+  // actions: until the level is passed you can only keep practising
+  const act = root.querySelector(".actions");
+  const again = document.createElement("button");
+  again.textContent = opts.nextTitle || "Another round";
+  again.onclick = opts.onNext;
+  const nx = opts.nav && opts.nav.next;
+  if (es.passed && nx) {
+    const go = document.createElement("button");
+    go.className = "primary"; go.dataset.shortcut = "primary"; go.textContent = nx.label;
+    go.onclick = nx.go;
+    again.className = "primary ghost"; again.dataset.shortcut = "secondary";
+    act.append(go, again);
+  } else {
+    again.className = "primary"; again.dataset.shortcut = "primary";
+    act.append(again);
+    if (es.passed) act.insertAdjacentHTML("beforeend", `<p class="muted center">🎉 You've finished every level!</p>`);
+  }
   window.scrollTo(0, 0);
 }
 

@@ -117,6 +117,7 @@ export function runStaffExercise(root, level, nav) {
       audio();       // unlock audio inside the click
       const btn = q(".startbtn"); if (btn) btn.style.visibility = "hidden";
       const bpm = store.settings.bpm || 60;
+      round.minBpm = Math.min(round.minBpm || Infinity, bpm);
       const { t0Perf, beatMs } = schedule(8, bpm);
       const exp = task.elems.map((_, j) => t0Perf + (4 + j) * beatMs);
       beatState = { t0Perf, beatMs, exp };
@@ -187,7 +188,7 @@ export function runStaffExercise(root, level, nav) {
 
     function endRound() {
       cleanup.forEach(f => f()); cleanup = []; stopTimers(); beatState = null;
-      const res = finishRound(es, round.log, { focus: round.focus });
+      const res = finishRound(es, round.log, { focus: round.focus, criteria: nav.criteria, bpm: tempo ? round.minBpm : null });
       save();
       const extra = () => {
         if (!tempo) return [];
@@ -201,12 +202,12 @@ export function runStaffExercise(root, level, nav) {
         return out;
       };
       renderResults(root, { es, res, label: keyLabel, itemKeys: level.itemKeys(), extraInsights: extra,
-        timeLabel: tempo ? "avg off-beat" : null, onNext: startRound, onHome: nav.home });
+        timeLabel: tempo ? "avg off-beat" : null, onNext: startRound, onHome: nav.home, nav });
     }
 
     cleanup.push(onNote(press));
     nextTask();
-    if (tempo) q(".startbtn").onclick = startMeasure;
+    if (tempo) { const sb = q(".startbtn"); sb.onclick = startMeasure; sb.dataset.shortcut = "primary"; }
   }
 
   startRound();

@@ -132,12 +132,12 @@ export function runKeysExercise(root, level, nav) {
 
     function endRound() {
       cleanup.forEach(f => f()); cleanup = [];
-      const res = finishRound(es, round.log, { focus: round.focus });
+      const res = finishRound(es, round.log, { focus: round.focus, criteria: nav.criteria });
       save();
       renderResults(root, {
         es, res, label: level.label || (k => k),
         itemKeys: level.itemKeys ? level.itemKeys(lo, hi) : null,
-        onNext: startRound, onHome: nav.home,
+        onNext: startRound, onHome: nav.home, nav,
       });
     }
 

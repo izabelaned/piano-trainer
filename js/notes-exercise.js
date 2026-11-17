@@ -69,11 +69,10 @@ export function runNotesExercise(root, level, nav) {
     function end() {
       clearInterval(timer);
       const score = level.timed ? round.log.filter(r => r.errs === 0).length : null;
-      const res = finishRound(es, round.log, { focus: round.focus, score, passAcc: level.timed ? 2 : 0.9 });
-      if (level.timed && score >= 25) es.passed = true;
+      const res = finishRound(es, round.log, { focus: round.focus, score, criteria: nav.criteria });
       save();
       renderResults(root, { es, res, label: nm, itemKeys: level.keys, extraInsights: notesInsights,
-        unitWord: "correct", onNext: startRound, onHome: nav.home, nextTitle: level.timed ? "Try again" : "Next round" });
+        unitWord: "correct", onNext: startRound, onHome: nav.home, nav, nextTitle: level.timed ? "Try again" : "Another round" });
     }
     if (level.timed) {
       const tick = () => {
