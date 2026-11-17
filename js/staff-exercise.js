@@ -1,7 +1,7 @@
 // Lesson 3: see notes on the staff, play them on the keyboard.
 // Modes: untimed (single notes, sequences, double notes) and tempo (4/4 with metronome).
 import { store, save, exState } from "./store.js";
-import { SIZES, nameOf, letterOf, SOLF, midiOf, TREBLE_BY_KEY } from "./music.js";
+import { SIZES, nameOf, midiOf, TREBLE_BY_KEY } from "./music.js";
 import { Keyboard } from "./keyboard.js";
 import { onNote, onMidiStatus, midiStatusText } from "./input.js";
 import { svgEl, drawMeasure, colorChord } from "./staff.js";
@@ -13,7 +13,7 @@ const LABEL_CYCLE = ["none", "c", "all"];
 const LABEL_NAMES = { c: "C labels", none: "no labels", all: "all labels" };
 const C = { ink: "#1d1b18", cur: "#3d5a80", ok: "#2e7d4f", bad: "#c0392b" };
 const midiOfKey = k => midiOf(k[0], +k.slice(1));
-export const keyLabel = k => k.split("+").map(x => (store.settings.solf ? SOLF[x[0]] + x.slice(1) : x)).join(" + ");
+export const keyLabel = k => k.split("+").join(" + ");
 
 export function runStaffExercise(root, level, nav) {
   const es = exState(level.id);
@@ -181,7 +181,7 @@ export function runStaffExercise(root, level, nav) {
     }
 
     function press(m) {
-      q(".pressed").textContent = nameOf(m) + (letterOf(m) ? " · " + SOLF[letterOf(m)] : "");
+      q(".pressed").textContent = nameOf(m);
       if (tempo) pressTempo(m);
       else if (!locked) pressUntimed(m);
     }

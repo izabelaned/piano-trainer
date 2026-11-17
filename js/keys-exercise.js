@@ -1,6 +1,6 @@
 // Lesson 1 / 3 style exercise: a task asks for keys, you play them (screen or MIDI).
 import { store, save, exState } from "./store.js";
-import { SIZES, letterOf, nameOf, SOLF, MIDDLE_C } from "./music.js";
+import { SIZES, letterOf, nameOf, MIDDLE_C } from "./music.js";
 import { Keyboard } from "./keyboard.js";
 import { onNote, onMidiStatus, midiStatusText } from "./input.js";
 import { finishRound, topHard } from "./engine.js";
@@ -112,7 +112,7 @@ export function runKeysExercise(root, level, nav) {
 
     function press(m) {
       if (locked) return;
-      q(".pressed").textContent = nameOf(m) + (letterOf(m) ? " · " + SOLF[letterOf(m)] : "");
+      q(".pressed").textContent = nameOf(m);
       if (task.any) {
         if (letterOf(m) === task.any.letter && !found.has(m)) {
           found.add(m); kb.set(m, "ok"); q(".chips").innerHTML = chipHtml();

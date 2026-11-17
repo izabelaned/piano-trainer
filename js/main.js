@@ -199,14 +199,13 @@ function settings(back) {
     <div class="card setting"><b>Keyboard size</b><p class="muted">Must match your real piano — exercises count keys from the bottom.</p>
       ${seg("size", Object.keys(SIZES).map(n => [n, n]), s.size)}</div>
     <div class="card setting"><b>On-screen keyboard</b>${seg("zoom", [["fit", "Whole keyboard"], ["large", "Large keys (scroll)"]], s.zoom === "large" ? "large" : "fit")}</div>
-    <div class="card setting"><b>Note names</b>${seg("solf", [[false, "C D E"], [true, "До Ре Ми"]], s.solf)}
+    <div class="card setting"><b>Answers</b>
       <label class="check"><input type="checkbox" data-check="showOct" ${s.showOct ? "checked" : ""}> Show octave in answers (e.g. F4)</label></div>
     <div class="card setting"><b>Notes per round (Lesson 2)</b>${seg("roundSize", [[10, "10"], [20, "20"], [30, "30"]], s.roundSize)}</div>
     <div class="card setting"><b>Progress</b><p class="muted">Saved in this browser only.</p><button class="mini danger" data-act="reset">Reset all progress</button></div>`;
   v.querySelectorAll("[data-set]").forEach(g => g.querySelectorAll("button").forEach(b => b.onclick = () => {
     const key = g.dataset.set; let val = b.dataset.v;
     if (key === "size" || key === "roundSize") val = +val;
-    if (key === "solf") val = val === "true";
     s[key] = val; save();
     if (key === "size") return settings(back);
     g.querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b));

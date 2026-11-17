@@ -1,6 +1,5 @@
 // Music helpers: MIDI numbers, note names, keyboard sizes.
 export const LETTERS = ["C", "D", "E", "F", "G", "A", "B"];
-export const SOLF = { C: "До", D: "Ре", E: "Ми", F: "Фа", G: "Сол", A: "Ла", B: "Си" };
 const PC = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
 const WHITE_PCS = [0, 2, 4, 5, 7, 9, 11];
 const SHARP_NAMES = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"];

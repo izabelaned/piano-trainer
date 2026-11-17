@@ -1,5 +1,5 @@
 // Lesson content: teaching steps + exercise levels.
-import { LETTERS, SOLF, SIZES, MIDDLE_C, TREBLE, keysOfLetter, nameOf, isWhite, letterOf, midiOf, FINGER_NAMES } from "./music.js";
+import { LETTERS, SIZES, MIDDLE_C, TREBLE, keysOfLetter, nameOf, isWhite, letterOf, midiOf, FINGER_NAMES } from "./music.js";
 import { Keyboard } from "./keyboard.js";
 import { onNote, connectMidi, onMidiStatus, midiStatusText } from "./input.js";
 import { drawStaff, drawNote, svgEl, el, yOf, drawMeasure, colorChord } from "./staff.js";
@@ -19,15 +19,12 @@ function kbVisual(host, { lo = 48, hi = 72, labels = "none", mark = null, info =
   line.textContent = info ? "Tap a key (or play your piano) to see its name." : "";
   host.appendChild(line);
   const off = onNote(m => {
-    if (info) line.innerHTML = `You played <b>${nameOf(m)}</b>${letterOf(m) ? " · " + SOLF[letterOf(m)] : ""}`;
+    if (info) line.innerHTML = `You played <b>${nameOf(m)}</b>`;
     kb.flash(m, "ok", 350);
   });
   return { kb, cleanup: () => { off(); kb.destroy(); } };
 }
 
-const namesTable = () => `<table class="names">
-  <tr><th>English</th>${LETTERS.map(L => `<td>${L}</td>`).join("")}</tr>
-  <tr><th>Български</th>${LETTERS.map(L => `<td>${SOLF[L]}</td>`).join("")}</tr></table>`;
 
 function staffVisual(host, notes, { clef = true, numbers = false, width = 360 } = {}) {
   const svg = svgEl(`0 40 ${width} 172`);
@@ -39,7 +36,6 @@ function staffVisual(host, notes, { clef = true, numbers = false, width = 360 } 
     const c = n.letter === "B" ? "#3d5a80" : "#1d1b18";
     drawNote(svg, n.step, x, { color: c, stem: false });
     el("text", { x, y: 182, "text-anchor": "middle", "font-size": 13, "font-weight": 700, fill: c }, svg).textContent = key;
-    el("text", { x, y: 200, "text-anchor": "middle", "font-size": 12, fill: "#7a746b" }, svg).textContent = SOLF[n.letter];
   });
   const card = document.createElement("div");
   card.className = "card staff";
@@ -51,7 +47,7 @@ function staffVisual(host, notes, { clef = true, numbers = false, width = 360 } 
 // ---------- Lesson 1 exercise generators ----------
 const rnd = n => Math.floor(Math.random() * n);
 const shuffle = a => a.map(x => [Math.random(), x]).sort((p, q) => p[0] - q[0]).map(p => p[1]);
-const letterLabel = k => (store.settings.solf ? SOLF[k] + " (" + k + ")" : k);
+const letterLabel = k => k;
 
 function namesTask(ctx, k, finger, hand) {
   const L = pick(ctx.es, LETTERS, ctx.prev);
@@ -129,8 +125,7 @@ export const LESSONS = [
       {
         title: "The musical alphabet",
         html: `<p>The white keys use only 7 letters: <b>C D E F G A B</b>. After B it starts again with C.</p>
-               ${namesTable()}
-               <p class="muted">The English letters start from A = Ла. That's why C is До.</p>`,
+               <div class="alphabet">C D E F G A B <span class="muted">→ C D E …</span></div>`,
         visual: h => kbVisual(h, { labels: "all" }),
       },
       {
@@ -244,20 +239,20 @@ export const LESSONS = [
       },
       {
         title: "The treble clef",
-        html: `<p>The sign at the start is a <b>clef</b>. It tells you which note is which. This one is the <b>treble clef</b>, also called the <b>G clef</b> (ключ сол).</p>
+        html: `<p>The sign at the start is a <b>clef</b>. It tells you which note is which. This one is the <b>treble clef</b>, also called the <b>G clef</b>.</p>
                <p>Its curl wraps around <b>line 2</b>, and that line is <b>G4</b> — the G just above middle C. Everything else is counted from there.</p>
                <p class="muted">The treble clef is used for higher notes, which you usually play with the right hand.</p>`,
         visual: h => staffVisual(h, ["G4"]),
       },
       {
         title: "Line notes: E G B D F",
-        html: `<p>The 5 lines, bottom to top, are <b>E G B D F</b> (Ми Сол Си Ре Фа).</p>
+        html: `<p>The 5 lines, bottom to top, are <b>E G B D F</b>.</p>
                <p>Remember it as <i>"<b>E</b>very <b>G</b>ood <b>B</b>oy <b>D</b>oes <b>F</b>ine"</i>.</p>`,
         visual: h => staffVisual(h, ["E4", "G4", "B4", "D5", "F5"]),
       },
       {
         title: "Space notes: F A C E",
-        html: `<p>The 4 spaces, bottom to top, spell <b>F A C E</b> (Фа Ла До Ми) — like the word <i>"face"</i>.</p>`,
+        html: `<p>The 4 spaces, bottom to top, spell <b>F A C E</b> — like the word <i>"face"</i>.</p>`,
         visual: h => staffVisual(h, ["F4", "A4", "C5", "E5"]),
       },
       {

@@ -1,11 +1,11 @@
 // Lesson 2 exercise: see a note on the treble staff, name it.
 import { store, save, exState } from "./store.js";
-import { LETTERS, SOLF, TREBLE_BY_KEY } from "./music.js";
+import { LETTERS, TREBLE_BY_KEY } from "./music.js";
 import { drawStaff, drawNote, svgEl } from "./staff.js";
 import { pick, topHard, finishRound } from "./engine.js";
 import { renderResults, sec } from "./results.js";
 
-const lab = L => (store.settings.solf ? SOLF[L] : L);
+const lab = L => L;
 const nm = key => lab(key[0]) + key.slice(1);
 
 export function runNotesExercise(root, level, nav) {

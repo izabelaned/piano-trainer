@@ -1,5 +1,5 @@
 // On-screen piano keyboard. Tapping a key sends it through the input layer.
-import { isWhite, letterOf, octaveOf, nameOf, SOLF, MIDDLE_C } from "./music.js";
+import { isWhite, letterOf, octaveOf, nameOf, MIDDLE_C } from "./music.js";
 import { emitNote } from "./input.js";
 import { store } from "./store.js";
 
@@ -69,7 +69,7 @@ export class Keyboard {
     const L = letterOf(m);
     if (!L) return "";
     const mode = this.opts.labels;
-    const letter = store.settings.solf ? SOLF[L] : L;
+    const letter = L;
     if (mode === "none") return m === MIDDLE_C ? "•" : "";
     if (mode === "c") return L === "C" ? (w >= 18 ? "C" + octaveOf(m) : w >= 9 ? "<small>C" + octaveOf(m) + "</small>" : "") : "";
     if (mode === "all") return w >= 16 || L === "C" ? letter : "";
