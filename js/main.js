@@ -62,6 +62,15 @@ function decorate() {
   });
 }
 new MutationObserver(decorate).observe(app, { childList: true, subtree: true });
+
+// Computer keyboard: Enter = the main button on screen (Next / Another round / Start …).
+document.addEventListener("keydown", e => {
+  if (e.key !== "Enter" || e.repeat || e.target.closest("input, textarea")) return;
+  if (e.target.closest("button")) return;            // a focused button already handles Enter itself
+  const btn = [...document.querySelectorAll('[data-shortcut="primary"]')]
+    .find(b => b.offsetParent !== null && !b.disabled && getComputedStyle(b).visibility !== "hidden");
+  if (btn) { e.preventDefault(); btn.click(); }
+});
 onMidiStatus(decorate);
 
 function shell(title, back) {

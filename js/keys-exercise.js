@@ -5,6 +5,7 @@ import { Keyboard } from "./keyboard.js";
 import { onNote, onMidiStatus, midiStatusText } from "./input.js";
 import { finishRound, topHard } from "./engine.js";
 import { renderResults } from "./results.js";
+import { handsSvg, handWords } from "./hands.js";
 
 const LABEL_CYCLE = ["c", "none", "all"];
 const LABEL_NAMES = { c: "C labels", none: "no labels", all: "all labels" };
@@ -26,6 +27,7 @@ export function runKeysExercise(root, level, nav) {
         <div class="prompt"></div>
         <div class="sub"></div>
         <div class="chips"></div>
+        <div class="handviz"></div>
       </div>
       <div class="feedback">&nbsp;</div>
       <div class="midiline muted"></div>
@@ -52,6 +54,15 @@ export function runKeysExercise(root, level, nav) {
       return task.targets.map((t, i) => `<span class="chip ${t.done ? "done" : ""} ${i === cur ? "cur" : ""}">${t.done ? "✓" : task.ordered ? (i + 1) + "." : "○"} ${t.label}</span>`).join("");
     }
 
+    // Which hand and finger to use right now (for sequences: the current key's).
+    function showHand() {
+      const box = q(".handviz");
+      let h = null;
+      if (task.ordered) { const t = task.targets.find(t => !t.done); if (t && t.hand) h = { hand: t.hand, finger: t.finger }; }
+      else if (task.hand) h = { hand: task.hand, finger: task.finger };
+      box.innerHTML = h ? `<div class="handwords">${handWords(h.hand, h.finger)}</div>${handsSvg(h)}` : "";
+    }
+
     function nextTask() {
       kb.clearAll();
       locked = false; found = new Set(); curErrs = 0; curSaid = []; totalErrs = 0; saidAll = [];
@@ -62,6 +73,7 @@ export function runKeysExercise(root, level, nav) {
       q(".prompt").innerHTML = task.prompt;
       q(".sub").innerHTML = task.sub || "";
       q(".chips").innerHTML = chipHtml();
+      showHand();
       q(".feedback").className = "feedback"; q(".feedback").innerHTML = "&nbsp;";
       const anchor = task.targets && task.targets.length ? task.targets.find(t => !t.done).m : MIDDLE_C;
       kb.scrollTo(anchor);
@@ -117,6 +129,7 @@ export function runKeysExercise(root, level, nav) {
           round.log.push({ item: t.item, ms: now - tLast, errs: curErrs, said: curSaid });
           tLast = now; curErrs = 0; curSaid = [];
           q(".chips").innerHTML = chipHtml();
+          showHand();
           if (task.targets.every(t => t.done)) complete();
           else { q(".feedback").className = "feedback ok"; q(".feedback").textContent = "✓ " + nameOf(m); kb.scrollTo(task.targets.find(t => !t.done).m); }
         } else if (!task.targets.some(x => x.done && x.m === m)) wrong(m);

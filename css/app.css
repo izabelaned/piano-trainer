@@ -170,3 +170,12 @@ body.midi-on .level.rec .sc { display:block !important; margin:4px 0 0; color:va
 .iconbtn .sc { display:none !important; }
 .sc-fired { outline:3px solid #e9a23b; }
 .sctable td { padding:6px 4px; font-size:.88rem; }
+
+/* hand + finger picture in tasks */
+.handviz:empty { display:none; }
+.handviz { margin-top:8px; text-align:center; }
+.handwords { font-weight:700; color:var(--accent); font-size:1rem; margin-bottom:2px; }
+.handviz .hands { max-width:240px; margin:0 auto; }
+@media (orientation: landscape) and (max-height: 520px) { .handviz .hands { max-width:150px; } }
+.kbtip { display:none; text-align:center; font-size:.75rem; color:var(--muted); margin-top:6px; }
+@media (hover: hover) and (pointer: fine) { .kbtip { display:block; } }

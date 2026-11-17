@@ -6,6 +6,7 @@ import { drawStaff, drawNote, svgEl, el, yOf, drawMeasure, colorChord } from "./
 import { schedule, audio } from "./metronome.js";
 import { store, save } from "./store.js";
 import { pick, difficulty } from "./engine.js";
+import { handsSvg, handWords } from "./hands.js";
 
 // ---------- step visual helpers ----------
 function kbVisual(host, { lo = 48, hi = 72, labels = "none", mark = null, info = true } = {}) {
@@ -47,26 +48,12 @@ function staffVisual(host, notes, { clef = true, numbers = false, width = 360 } 
   return {};
 }
 
-function handsSvg() {
-  const finger = (x, h, n, w = 22) => `<rect x="${x}" y="${100 - h}" width="${w}" height="${h}" rx="11" fill="#f3d9c4" stroke="#b98d6c"/>
-    <text x="${x + w / 2}" y="${100 - h + 18}" text-anchor="middle" font-size="14" font-weight="700" fill="#1d1b18">${n}</text>`;
-  const palm = x => `<rect x="${x}" y="92" width="128" height="60" rx="24" fill="#f3d9c4" stroke="#b98d6c"/>`;
-  // left hand (palm down): pinky on the left, thumb on the right
-  const L = palm(14) + finger(14, 50, 5) + finger(40, 70, 4) + finger(66, 78, 3) + finger(92, 70, 2) + finger(128, 36, 1, 24);
-  const R = palm(218) + finger(206, 36, 1, 24) + finger(244, 70, 2) + finger(270, 78, 3) + finger(296, 70, 4) + finger(322, 50, 5);
-  return `<svg viewBox="0 0 360 170" class="hands">${L}${R}
-    <text x="78" y="168" text-anchor="middle" font-size="12" fill="#7a746b">Left hand (LH)</text>
-    <text x="282" y="168" text-anchor="middle" font-size="12" fill="#7a746b">Right hand (RH)</text></svg>`;
-}
-
 // ---------- Lesson 1 exercise generators ----------
-const handTxt = (h, f) => `${h === "R" ? "Right hand" : "Left hand"} · finger ${f} (${FINGER_NAMES[f]})`;
-const handShort = (h, f) => `${h}H ${f}`;
 const rnd = n => Math.floor(Math.random() * n);
 const shuffle = a => a.map(x => [Math.random(), x]).sort((p, q) => p[0] - q[0]).map(p => p[1]);
 const letterLabel = k => (store.settings.solf ? SOLF[k] + " (" + k + ")" : k);
 
-function namesTask(ctx, k, extraSub, hand) {
+function namesTask(ctx, k, finger, hand) {
   const L = pick(ctx.es, LETTERS, ctx.prev);
   const all = keysOfLetter(L, ctx.lo, ctx.hi);
   const ks = hand ? handKeys(all, hand) : all;
@@ -76,7 +63,8 @@ function namesTask(ctx, k, extraSub, hand) {
   return {
     item: L,
     prompt: `Play <b>${list}</b>`,
-    sub: "Any order. The C labels show each octave — middle C is C4." + (extraSub ? `<div class="handline">${extraSub}</div>` : ""),
+    sub: "Any order. The C labels show each octave — middle C is C4.",
+    hand, finger,
     targets: chosen.map(m => ({ m, label: nameOf(m) })),
   };
 }
@@ -94,7 +82,7 @@ function handTask(ctx, hand) {
   return {
     item: L,
     prompt: `Play <b>${nameOf(m)}</b>`,
-    sub: `<div class="handline">${handTxt(hand, f)}</div>`,
+    hand, finger: f,
     targets: [{ m, label: nameOf(m) }],
   };
 }
@@ -105,11 +93,11 @@ function mixTask(ctx) {
   const targets = letters.map(L => {
     const opts = handKeys(keysOfLetter(L, ctx.lo, ctx.hi), hand);
     const m = opts[rnd(opts.length)], f = 1 + rnd(5);
-    const t = { m, item: L, label: `${nameOf(m)} · ${handShort(hand, f)}` };
+    const t = { m, item: L, label: nameOf(m), hand, finger: f };
     hand = hand === "L" ? "R" : "L";
     return t;
   });
-  return { item: letters.join(""), ordered: true, prompt: "Play in order:", sub: "Hands alternate.", targets };
+  return { item: letters.join(""), ordered: true, prompt: "Play in order:", sub: "Hands alternate — follow the highlighted finger.", targets };
 }
 
 function noteRange(lo, hi) {
@@ -189,7 +177,7 @@ export const LESSONS = [
         title: "Finger numbers",
         html: `<p>Each finger has a number, the same on both hands: <b>1 = thumb, 2 = index, 3 = middle, 4 = ring, 5 = pinky</b>.</p>
                <p>Both hands count from the thumb. So on the keyboard the left hand reads 5 4 3 2 1 from left to right, and the right hand reads 1 2 3 4 5.</p>
-               <p class="muted">Exercises write it short: <b>RH 2</b> = right hand, index finger; <b>LH 5</b> = left hand, pinky.</p>`,
+               <p class="muted">In the exercises the finger to use is highlighted on a picture like this one.</p>`,
         visual: h => { h.innerHTML = `<div class="card">${handsSvg()}</div>`; return {}; },
       },
       {
@@ -219,7 +207,7 @@ export const LESSONS = [
       { id: "1.2", title: "Octave names", desc: "Play F3, F5… — the C labels guide you.", tasks: 8,
         make: ctx => namesTask(ctx, 3), itemKeys: () => LETTERS, label: letterLabel },
       { id: "1.3", title: "Index finger only", desc: "Same, always with RH 2.", tasks: 8,
-        make: ctx => namesTask(ctx, 2, handTxt("R", 2), "R"), itemKeys: () => LETTERS, label: letterLabel },
+        make: ctx => namesTask(ctx, 2, 2, "R"), itemKeys: () => LETTERS, label: letterLabel },
       { id: "1.4", title: "Right hand, every finger", desc: "One key, a given RH finger.", tasks: 10,
         make: ctx => handTask(ctx, "R"), itemKeys: () => LETTERS, label: letterLabel },
       { id: "1.5", title: "Left hand, every finger", desc: "One key, a given LH finger.", tasks: 10,
@@ -232,7 +220,7 @@ export const LESSONS = [
           const k = pick(ctx.es, keys, ctx.prev);
           const L = k[0], oct = +k.slice(1), m = midiOf(L, oct);
           const hand = m < MIDDLE_C ? "L" : "R", f = 1 + rnd(5);
-          return { item: k, prompt: `Play <b>${k}</b>`, sub: `<div class="handline">${handTxt(hand, f)}</div>`, targets: [{ m, label: k }] };
+          return { item: k, prompt: `Play <b>${k}</b>`, hand, finger: f, targets: [{ m, label: k }] };
         },
         itemKeys: (lo, hi) => noteRange(lo, hi), label: k => k },
     ],
@@ -423,7 +411,7 @@ function singleTask(ctx, fingering) {
   return {
     elems: [{ keys: [k], item: k, finger: fingering ? f : null }],
     sub: (moved ? `<span class="handline">↔ ${where}</span>` : `<span class="muted">${where}</span>`) +
-         (fingering ? ` · <b>RH ${f}</b> (${FINGER_NAMES[f]})` : ""),
+         (fingering ? ` · <b>${handWords("R", f)}</b>` : ""),
   };
 }
 

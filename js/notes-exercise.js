@@ -12,15 +12,16 @@ export function runNotesExercise(root, level, nav) {
   const es = exState(level.id);
   let timer = null, alive = true;
 
+  let roundCleanup = () => {};
   function startRound() {
-    clearInterval(timer);
+    clearInterval(timer); roundCleanup();
     const size = store.settings.roundSize;
     const round = { i: 0, log: [], prev: null, focus: topHard(es, 3, level.keys), endAt: level.timed ? Date.now() + 60000 : null };
     root.innerHTML = `
       <div class="progress"><span class="ptxt"></span><div class="bar"><div></div></div></div>
       <div class="card staff"></div>
       <div class="feedback">&nbsp;</div>
-      <div class="namedock"><div class="keys"></div></div>`;
+      <div class="namedock"><div class="keys"></div><div class="kbtip">⌨️ You can also type C D E F G A B</div></div>`;
     const q = s => root.querySelector(s);
     const svg = svgEl("0 0 300 180");
     q(".card.staff").appendChild(svg);
@@ -31,6 +32,17 @@ export function runNotesExercise(root, level, nav) {
       b.onclick = () => answer(L, b);
       keysDiv.appendChild(b);
     });
+
+    // Computer keyboard: press C D E F G A B instead of tapping.
+    const onKey = e => {
+      if (e.ctrlKey || e.metaKey || e.altKey || e.repeat) return;
+      const L = e.key.toUpperCase();
+      if (!LETTERS.includes(L)) return;
+      const btn = keysDiv.querySelector(`[data-l="${L}"]`);
+      if (btn) { e.preventDefault(); answer(L, btn); }
+    };
+    document.addEventListener("keydown", onKey);
+    roundCleanup = () => document.removeEventListener("keydown", onKey);
 
     let cur, t0, locked, noteG = null;
     function draw(color) {
@@ -67,7 +79,7 @@ export function runNotesExercise(root, level, nav) {
       }, ok ? 450 : 1400);
     }
     function end() {
-      clearInterval(timer);
+      clearInterval(timer); roundCleanup();
       const score = level.timed ? round.log.filter(r => r.errs === 0).length : null;
       const res = finishRound(es, round.log, { focus: round.focus, score, criteria: nav.criteria });
       save();
@@ -87,7 +99,7 @@ export function runNotesExercise(root, level, nav) {
   }
 
   startRound();
-  return () => { alive = false; clearInterval(timer); };
+  return () => { alive = false; clearInterval(timer); roundCleanup(); };
 }
 
 function notesInsights(per) {
