@@ -5,7 +5,7 @@ import { onNote, connectMidi, onMidiStatus, midiStatusText } from "./input.js";
 import { drawStaff, drawNote, svgEl, el, yOf, drawMeasure, colorChord } from "./staff.js";
 import { schedule, audio } from "./metronome.js";
 import { store, save } from "./store.js";
-import { pick } from "./engine.js";
+import { pick, difficulty } from "./engine.js";
 
 // ---------- step visual helpers ----------
 function kbVisual(host, { lo = 48, hi = 72, labels = "none", mark = null, info = true } = {}) {
@@ -66,9 +66,10 @@ const rnd = n => Math.floor(Math.random() * n);
 const shuffle = a => a.map(x => [Math.random(), x]).sort((p, q) => p[0] - q[0]).map(p => p[1]);
 const letterLabel = k => (store.settings.solf ? SOLF[k] + " (" + k + ")" : k);
 
-function namesTask(ctx, k, extraSub) {
+function namesTask(ctx, k, extraSub, hand) {
   const L = pick(ctx.es, LETTERS, ctx.prev);
-  const ks = keysOfLetter(L, ctx.lo, ctx.hi);
+  const all = keysOfLetter(L, ctx.lo, ctx.hi);
+  const ks = hand ? handKeys(all, hand) : all;
   const chosen = shuffle(ks).slice(0, Math.min(k, ks.length)).sort((a, b) => a - b);
   const names = chosen.map(nameOf);
   const list = names.length > 1 ? names.slice(0, -1).join(", ") + " and " + names[names.length - 1] : names[0];
@@ -80,9 +81,9 @@ function namesTask(ctx, k, extraSub) {
   };
 }
 
-// Keys a hand would normally reach: right hand from about G3 up, left hand up to about G4.
+// Right hand plays middle C and above, left hand middle C and below.
 function handKeys(ks, hand) {
-  const r = ks.filter(m => (hand === "R" ? m >= MIDDLE_C - 5 : m <= MIDDLE_C + 7));
+  const r = ks.filter(m => (hand === "R" ? m >= MIDDLE_C : m <= MIDDLE_C));
   return r.length ? r : ks;
 }
 
@@ -218,7 +219,7 @@ export const LESSONS = [
       { id: "1.2", title: "Octave names", desc: "Play F3, F5… — the C labels guide you.", tasks: 8,
         make: ctx => namesTask(ctx, 3), itemKeys: () => LETTERS, label: letterLabel },
       { id: "1.3", title: "Index finger only", desc: "Same, always with RH 2.", tasks: 8,
-        make: ctx => namesTask(ctx, 2, handTxt("R", 2)), itemKeys: () => LETTERS, label: letterLabel },
+        make: ctx => namesTask(ctx, 2, handTxt("R", 2), "R"), itemKeys: () => LETTERS, label: letterLabel },
       { id: "1.4", title: "Right hand, every finger", desc: "One key, a given RH finger.", tasks: 10,
         make: ctx => handTask(ctx, "R"), itemKeys: () => LETTERS, label: letterLabel },
       { id: "1.5", title: "Left hand, every finger", desc: "One key, a given LH finger.", tasks: 10,
@@ -353,53 +354,123 @@ export const LESSONS = [
       },
     ],
     levels: [
-      { id: "3.1", type: "staff", title: "See it, play it", desc: "One note, any right-hand finger.", tasks: 12,
-        make: ctx => { const k = pick(ctx.es, KEYS, ctx.prev); return { elems: [{ keys: [k], item: k }], sub: "Right hand, any finger." }; },
-        itemKeys: () => KEYS },
-      { id: "3.2", type: "staff", title: "With fingering", desc: "One note, the finger number is written above it.", tasks: 12,
-        make: ctx => { const k = pick(ctx.es, KEYS, ctx.prev), f = 1 + rnd(5);
-          return { elems: [{ keys: [k], item: k, finger: f }], sub: `<span class="handline">${handTxt("R", f)}</span>` }; },
-        itemKeys: () => KEYS },
+      { id: "3.1", type: "staff", title: "See it, play it", desc: "One note at a time, any right-hand finger.", tasks: 12,
+        make: ctx => singleTask(ctx, false), itemKeys: () => KEYS },
+      { id: "3.2", type: "staff", title: "With fingering", desc: "One note at a time, the finger number is written above it.", tasks: 12,
+        make: ctx => singleTask(ctx, true), itemKeys: () => KEYS },
       { id: "3.3", type: "staff", title: "Five-finger positions", desc: "4 notes in C or G position, fingers written above.", tasks: 6,
-        make: ctx => positionTask(ctx, ["C4", "G4"]), itemKeys: () => KEYS },
-      { id: "3.4", type: "staff", title: "Read ahead", desc: "4 notes anywhere from B3 to B5, play them in order.", tasks: 6,
-        make: ctx => {
-          const elems = []; let prev = ctx.prev;
-          for (let i = 0; i < 4; i++) { const k = pick(ctx.es, KEYS, prev); elems.push({ keys: [k], item: k }); prev = k; }
-          return { elems, sub: "Left to right, right hand. No rush — accuracy first." };
-        }, itemKeys: () => KEYS },
+        make: ctx => phraseTask(ctx, ["C4", "G4"]), itemKeys: () => KEYS },
+      { id: "3.4", type: "staff", title: "Read ahead", desc: "4 notes from C4 to B5 with steps and leaps, play them in order.", tasks: 6,
+        make: ctx => leapTask(ctx), itemKeys: () => KEYS },
       { id: "3.5", type: "staff", tempo: true, title: "In time (4/4)", desc: "4 notes, one per metronome click.", tasks: 6,
-        make: ctx => positionTask(ctx, ["C4", "D4", "E4", "F4", "G4", "A4"]), itemKeys: () => KEYS },
+        make: ctx => phraseTask(ctx, ["C4", "D4", "E4", "F4", "G4", "A4"]), itemKeys: () => KEYS },
       { id: "3.6", type: "staff", title: "Double notes", desc: "Two notes together, one chord at a time.", tasks: 10, pass: { maxMs: 3500 },
-        make: ctx => { const k = pick(ctx.es, DYADS, ctx.prev); return { elems: [{ keys: k.split("+"), item: k }], sub: "Both notes together, right hand." }; },
-        itemKeys: () => DYADS },
+        make: ctx => dyadTask(ctx, 1), itemKeys: () => DYADS },
       { id: "3.7", type: "staff", tempo: true, title: "Double notes in time", desc: "4 double notes in 4/4.", tasks: 6, pass: { maxMs: 200 },
-        make: ctx => {
-          const elems = []; let prev = ctx.prev;
-          for (let i = 0; i < 4; i++) { const k = pick(ctx.es, DYADS, prev); elems.push({ keys: k.split("+"), item: k }); prev = k; }
-          return { elems, sub: "Two notes together on every click." };
-        }, itemKeys: () => DYADS },
+        make: ctx => dyadTask(ctx, 4), itemKeys: () => DYADS },
     ],
   },
 ];
 
 // ---------- Lesson 3 helpers ----------
-const KEYS = TREBLE.map(n => n.key);
+// Right hand only, so the range starts at middle C (B3 belongs to the left hand).
+const KEYS = TREBLE.filter(n => n.key !== "B3").map(n => n.key);   // C4 … B5
 const DYADS = [];
-TREBLE.forEach((n, i) => [2, 3, 4].forEach(d => { if (TREBLE[i + d]) DYADS.push(n.key + "+" + TREBLE[i + d].key); }));
+KEYS.forEach((k, i) => [2, 3, 4].forEach(d => { if (KEYS[i + d]) DYADS.push(k + "+" + KEYS[i + d]); }));
+const MAX_THUMB = KEYS.length - 5;                                    // thumb can go up to F5
 
-function positionTask(ctx, starts) {
-  const start = starts[rnd(starts.length)];
-  const i0 = KEYS.indexOf(start);
-  const pos = KEYS.slice(i0, i0 + 5);
-  const elems = []; let prev = ctx.prev;
-  for (let i = 0; i < 4; i++) {
-    const k = pick(ctx.es, pos, prev);
-    elems.push({ keys: [k], item: k, finger: pos.indexOf(k) + 1 });
-    prev = k;
-  }
-  return { elems, sub: `Thumb on <b>${start}</b> · fingers 1–5 on ${pos.join(" ")}` };
+// How likely each melodic interval is (in steps). Mostly steps and small skips, like real tunes.
+const STEP_W = { 0: 0.15, 1: 3, 2: 2.2, 3: 1.2, 4: 0.8 };
+const LEAP_W = { 0: 0.1, 1: 2.5, 2: 2.4, 3: 1.8, 4: 1.4, 5: 1, 6: 0.6, 7: 0.5 };
+const diff = (ctx, k) => Math.pow(difficulty(ctx.es, k), 1.5);
+
+function weighted(items, weights) {
+  let r = Math.random() * weights.reduce((a, b) => a + b, 0);
+  for (let i = 0; i < items.length; i++) { r -= weights[i]; if (r <= 0) return items[i]; }
+  return items[items.length - 1];
 }
+
+// Pick a hand position (thumb index), leaning toward positions that hold your hard notes.
+function choosePos(ctx, options, near) {
+  const w = options.map(p => {
+    let d = 0; for (let j = p; j < p + 5; j++) d += diff(ctx, KEYS[j]);
+    const move = near == null ? 1 : [1, 1.4, 1.1, 0.7, 0.4][Math.min(4, Math.abs(p - near))];
+    return d * move;
+  });
+  return weighted(options, w);
+}
+
+// Next note inside the current position: mostly steps/skips, hard notes a bit more often.
+function nextInPos(ctx, p, last) {
+  const cand = [0, 1, 2, 3, 4].map(f => p + f);
+  const w = cand.map(j => (last == null ? 1 : STEP_W[Math.min(4, Math.abs(j - last))]) * diff(ctx, KEYS[j]));
+  return weighted(cand, w);
+}
+
+// 3.1 / 3.2: one note per task, but consecutive tasks form a flowing line in one hand position.
+// The hand moves now and then — the task says so.
+function singleTask(ctx, fingering) {
+  const st = ctx.state;
+  let moved = false;
+  if (st.p == null) { st.p = choosePos(ctx, range(0, MAX_THUMB)); moved = true; st.n = 0; }
+  else if (st.n >= 4 && Math.random() < 0.3) {
+    st.p = choosePos(ctx, range(0, MAX_THUMB).filter(p => p !== st.p), st.p); moved = true; st.n = 0; st.last = null;
+  }
+  const j = nextInPos(ctx, st.p, st.last);
+  st.last = j; st.n++;
+  const k = KEYS[j], f = j - st.p + 1;
+  const where = `Hand position: thumb on <b>${KEYS[st.p]}</b>`;
+  return {
+    elems: [{ keys: [k], item: k, finger: fingering ? f : null }],
+    sub: (moved ? `<span class="handline">↔ ${where}</span>` : `<span class="muted">${where}</span>`) +
+         (fingering ? ` · <b>RH ${f}</b> (${FINGER_NAMES[f]})` : ""),
+  };
+}
+
+// 3.3 / 3.5: a 4-note phrase in one five-finger position.
+function phraseTask(ctx, starts) {
+  const options = starts.map(k => KEYS.indexOf(k));
+  const p = choosePos(ctx, options);
+  const elems = []; let last = null;
+  for (let i = 0; i < 4; i++) {
+    const j = nextInPos(ctx, p, last); last = j;
+    elems.push({ keys: [KEYS[j]], item: KEYS[j], finger: j - p + 1 });
+  }
+  return { elems, sub: `Thumb on <b>${KEYS[p]}</b> · fingers 1–5 on ${KEYS.slice(p, p + 5).join(" ")}` };
+}
+
+// 3.4: steps and leaps across the whole range, continuing from the previous phrase.
+function leapTask(ctx) {
+  const st = ctx.state;
+  const elems = [];
+  for (let i = 0; i < 4; i++) {
+    const cand = range(0, KEYS.length - 1);
+    const w = cand.map(j => (st.last == null ? 1 : (LEAP_W[Math.abs(j - st.last)] || 0.1)) * diff(ctx, KEYS[j]));
+    const j = weighted(cand, w); st.last = j;
+    elems.push({ keys: [KEYS[j]], item: KEYS[j] });
+  }
+  return { elems, sub: "Left to right, right hand. Small steps, some leaps — no rush." };
+}
+
+// 3.6 / 3.7: double notes that fit one hand position, with fingering, moving smoothly.
+function dyadTask(ctx, count) {
+  const st = ctx.state;
+  if (st.p == null || (st.n >= 4 && Math.random() < 0.35)) {
+    st.p = choosePos(ctx, range(0, MAX_THUMB), st.p); st.n = 0; st.last = null;
+  }
+  const elems = [];
+  for (let i = 0; i < count; i++) {
+    const cand = [];
+    for (let lo = st.p; lo <= st.p + 2; lo++) for (const d of [2, 3, 4]) if (lo + d <= st.p + 4) cand.push([lo, lo + d]);
+    const w = cand.map(([a, b]) => (st.last == null ? 1 : [0.3, 3, 2, 1][Math.min(3, Math.abs(a - st.last))]) * diff(ctx, KEYS[a] + "+" + KEYS[b]));
+    const [a, b] = weighted(cand, w);
+    st.last = a; st.n++;
+    elems.push({ keys: [KEYS[a], KEYS[b]], item: KEYS[a] + "+" + KEYS[b], finger: [a - st.p + 1, b - st.p + 1] });
+  }
+  return { elems, sub: `Thumb on <b>${KEYS[st.p]}</b> · both notes together, fingers written above` };
+}
+
+function range(a, b) { const r = []; for (let i = a; i <= b; i++) r.push(i); return r; }
 
 function staffAndKb(h, { notes = null, elems = null, timeSig = false, mark = [], interactive = false }) {
   const card = document.createElement("div");

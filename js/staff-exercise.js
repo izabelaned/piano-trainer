@@ -73,7 +73,7 @@ export function runStaffExercise(root, level, nav) {
 
     function nextTask() {
       kb.clearAll();
-      task = level.make({ es, prev: round.prev });
+      task = level.make({ es, prev: round.prev, state: round.gen || (round.gen = {}) });
       round.prev = task.elems[0].item;
       task.elems.forEach(e => { e.midis = e.keys.map(midiOfKey); e.hit = new Set(); e.done = false; e.errs = 0; e.said = []; });
       idx = 0; curErrs = 0; curSaid = []; locked = false;

@@ -56,9 +56,12 @@ export function drawChord(svg, steps, x, { color = "#1d1b18", stem = true, finge
     else el("line", { class: "stem", x1: x - 6.8, x2: x - 6.8, y1: yOf(hi) + 1, y2: yOf(lo) + 36, stroke: color, "stroke-width": 1.5 }, g);
   }
   if (finger != null) {
+    const fs = (Array.isArray(finger) ? [...finger] : [finger]).sort((a, b) => a - b);   // lowest finger at the bottom
     const y = Math.min(stem && up ? yOf(hi) - 44 : yOf(hi) - 14, 62);
-    const t = el("text", { x, y, "text-anchor": "middle", "font-size": 13, "font-weight": 700, fill: "#3d5a80", class: "finger" }, g);
-    t.textContent = finger;
+    fs.forEach((f, i) => {
+      const t = el("text", { x, y: y - i * 13, "text-anchor": "middle", "font-size": 13, "font-weight": 700, fill: "#3d5a80", class: "finger" }, g);
+      t.textContent = f;
+    });
   }
   return g;
 }
