@@ -24,10 +24,10 @@ export function runKeysExercise(root, level, nav) {
     root.innerHTML = `
       <div class="progress"><span class="ptxt"></span><div class="bar"><div></div></div></div>
       <div class="card task">
+        <div class="handviz"></div>
         <div class="prompt"></div>
         <div class="sub"></div>
         <div class="chips"></div>
-        <div class="handviz"></div>
       </div>
       <div class="feedback">&nbsp;</div>
       <div class="midiline muted"></div>

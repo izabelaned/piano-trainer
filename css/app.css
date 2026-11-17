@@ -173,7 +173,7 @@ body.midi-on .level.rec .sc { display:block !important; margin:4px 0 0; color:va
 
 /* hand + finger picture in tasks */
 .handviz:empty { display:none; }
-.handviz { margin-top:8px; text-align:center; }
+.handviz { margin:2px 0 8px; padding-bottom:8px; border-bottom:1px solid var(--line); text-align:center; }
 .handwords { font-weight:700; color:var(--accent); font-size:1rem; margin-bottom:2px; }
 .handviz .hands { max-width:240px; margin:0 auto; }
 @media (orientation: landscape) and (max-height: 520px) { .handviz .hands { max-width:150px; } }
