@@ -27,10 +27,7 @@ export class Keyboard {
 
   fits() {
     if (this.opts.fit != null) return this.opts.fit;
-    const z = store.settings.zoom;
-    if (z === "fit") return true;
-    if (z === "large") return false;
-    return this.whiteCount() <= 22;    // auto: fit small keyboards, scroll big ones
+    return store.settings.zoom !== "large";   // default: the whole keyboard fits the width
   }
 
   render() {
@@ -74,7 +71,7 @@ export class Keyboard {
     const mode = this.opts.labels;
     const letter = store.settings.solf ? SOLF[L] : L;
     if (mode === "none") return m === MIDDLE_C ? "•" : "";
-    if (mode === "c") return L === "C" ? (w >= 18 ? "C" + octaveOf(m) : "C") : "";
+    if (mode === "c") return L === "C" ? (w >= 18 ? "C" + octaveOf(m) : w >= 9 ? "<small>C" + octaveOf(m) + "</small>" : "") : "";
     if (mode === "all") return w >= 16 || L === "C" ? letter : "";
     if (mode === "allOct") return w >= 22 ? letter + "<small>" + octaveOf(m) + "</small>" : (L === "C" ? "C" + octaveOf(m) : "");
     return "";

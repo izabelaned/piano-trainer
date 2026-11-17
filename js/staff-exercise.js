@@ -18,7 +18,7 @@ export const keyLabel = k => k.split("+").map(x => (store.settings.solf ? SOLF[x
 export function runStaffExercise(root, level, nav) {
   const es = exState(level.id);
   const [slo, shi] = SIZES[store.settings.size];
-  const lo = Math.max(slo, 57), hi = Math.min(shi, 84);    // A3–C6 on screen
+  const lo = slo, hi = shi;    // the whole keyboard, like the real one
   const tasksPerRound = level.tasks || 8;
   const tempo = !!level.tempo;
   let labels = level.labels || "none";

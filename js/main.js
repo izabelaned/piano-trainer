@@ -91,7 +91,31 @@ function exercise(L, lv) {
   const v = shell(`${lv.id} · ${lv.title}`, () => home());
   v.classList.add(lv.type === "notes" ? "with-names" : "with-kb");
   const nav = { home };
-  cleanup = lv.type === "notes" ? runNotesExercise(v, lv, nav) : lv.type === "staff" ? runStaffExercise(v, lv, nav) : runKeysExercise(v, lv, nav);
+  const stop = lv.type === "notes" ? runNotesExercise(v, lv, nav) : lv.type === "staff" ? runStaffExercise(v, lv, nav) : runKeysExercise(v, lv, nav);
+  // keep content clear of the docked keyboard / name buttons, whatever their height
+  let ro = null;
+  const fitPadding = () => { const d = v.querySelector(".kbdock, .namedock"); v.style.paddingBottom = d ? (d.offsetHeight + 24) + "px" : ""; };
+  if (window.ResizeObserver) { ro = new ResizeObserver(fitPadding); ro.observe(v); }
+  fitPadding();
+  if (lv.type !== "notes") addRotateHint(v);
+  cleanup = () => { if (ro) ro.disconnect(); stop && stop(); };
+}
+
+function addRotateHint(v) {
+  if (store.settings.hideRotate) return;
+  const h = document.createElement("div");
+  h.className = "rotatehint";
+  const canFs = !!document.documentElement.requestFullscreen;
+  h.innerHTML = `<span>📱↻ Turn your phone sideways for a bigger keyboard.</span>
+    ${canFs ? `<button class="mini" data-act="fs">Full screen</button>` : ""}<button class="iconbtn" data-act="x" aria-label="Hide">✕</button>`;
+  v.prepend(h);
+  if (canFs) h.querySelector('[data-act="fs"]').onclick = async () => {
+    try {
+      await document.documentElement.requestFullscreen();
+      if (screen.orientation && screen.orientation.lock) await screen.orientation.lock("landscape");
+    } catch (e) {}
+  };
+  h.querySelector('[data-act="x"]').onclick = () => { store.settings.hideRotate = true; save(); h.remove(); };
 }
 
 // ---------- settings ----------
@@ -104,7 +128,7 @@ function settings(back) {
       <button class="primary ghost" data-act="midi">🎹 Connect piano (MIDI)</button></div>
     <div class="card setting"><b>Keyboard size</b><p class="muted">Must match your real piano — exercises count keys from the bottom.</p>
       ${seg("size", Object.keys(SIZES).map(n => [n, n]), s.size)}</div>
-    <div class="card setting"><b>On-screen keyboard</b>${seg("zoom", [["auto", "Auto"], ["fit", "Fit screen"], ["large", "Large keys"]], s.zoom)}</div>
+    <div class="card setting"><b>On-screen keyboard</b>${seg("zoom", [["fit", "Whole keyboard"], ["large", "Large keys (scroll)"]], s.zoom === "large" ? "large" : "fit")}</div>
     <div class="card setting"><b>Note names</b>${seg("solf", [[false, "C D E"], [true, "До Ре Ми"]], s.solf)}
       <label class="check"><input type="checkbox" data-check="showOct" ${s.showOct ? "checked" : ""}> Show octave in answers (e.g. F4)</label></div>
     <div class="card setting"><b>Notes per round (Lesson 2)</b>${seg("roundSize", [[10, "10"], [20, "20"], [30, "30"]], s.roundSize)}</div>

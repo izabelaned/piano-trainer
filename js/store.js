@@ -3,7 +3,7 @@ const KEY = "pianoTrainerV3";
 
 function defaults() {
   return {
-    settings: { size: 88, solf: false, showOct: false, roundSize: 20, midi: false, zoom: "auto" },
+    settings: { size: 88, solf: false, showOct: false, roundSize: 20, midi: false, zoom: "fit" },
     ex: {},          // per-exercise state
     lessonSeen: {},  // lessonId -> true once the steps were finished
   };

@@ -1,5 +1,5 @@
 // Lesson content: teaching steps + exercise levels.
-import { LETTERS, SOLF, SIZES, MIDDLE_C, TREBLE, keysOfLetter, ordinal, nameOf, isWhite, letterOf, midiOf, FINGER_NAMES } from "./music.js";
+import { LETTERS, SOLF, SIZES, MIDDLE_C, TREBLE, keysOfLetter, nameOf, isWhite, letterOf, midiOf, FINGER_NAMES } from "./music.js";
 import { Keyboard } from "./keyboard.js";
 import { onNote, connectMidi, onMidiStatus, midiStatusText } from "./input.js";
 import { drawStaff, drawNote, svgEl, el, yOf, drawMeasure, colorChord } from "./staff.js";
@@ -66,32 +66,35 @@ const rnd = n => Math.floor(Math.random() * n);
 const shuffle = a => a.map(x => [Math.random(), x]).sort((p, q) => p[0] - q[0]).map(p => p[1]);
 const letterLabel = k => (store.settings.solf ? SOLF[k] + " (" + k + ")" : k);
 
-function ordinalTask(ctx, k, extraSub) {
+function namesTask(ctx, k, extraSub) {
   const L = pick(ctx.es, LETTERS, ctx.prev);
   const ks = keysOfLetter(L, ctx.lo, ctx.hi);
-  const n = Math.min(k, ks.length);
-  const ords = shuffle(ks.map((_, i) => i + 1)).slice(0, n).sort((a, b) => a - b);
-  const names = ords.map(o => ordinal(o));
+  const chosen = shuffle(ks).slice(0, Math.min(k, ks.length)).sort((a, b) => a - b);
+  const names = chosen.map(nameOf);
   const list = names.length > 1 ? names.slice(0, -1).join(", ") + " and " + names[names.length - 1] : names[0];
   return {
     item: L,
-    prompt: `Play the <b>${list} ${L}</b>`,
-    sub: `Count ${L}'s from the lowest key of your keyboard. Any order.` + (extraSub ? `<div class="handline">${extraSub}</div>` : ""),
-    targets: ords.map(o => ({ m: ks[o - 1], label: `${ordinal(o)} ${L}` })),
+    prompt: `Play <b>${list}</b>`,
+    sub: "Any order. The C labels show each octave — middle C is C4." + (extraSub ? `<div class="handline">${extraSub}</div>` : ""),
+    targets: chosen.map(m => ({ m, label: nameOf(m) })),
   };
+}
+
+// Keys a hand would normally reach: right hand from about G3 up, left hand up to about G4.
+function handKeys(ks, hand) {
+  const r = ks.filter(m => (hand === "R" ? m >= MIDDLE_C - 5 : m <= MIDDLE_C + 7));
+  return r.length ? r : ks;
 }
 
 function handTask(ctx, hand) {
   const L = pick(ctx.es, LETTERS, ctx.prev);
-  const ks = keysOfLetter(L, ctx.lo, ctx.hi);
-  let idx = ks.map((m, i) => i).filter(i => hand === "R" ? ks[i] >= MIDDLE_C - 5 : ks[i] <= MIDDLE_C + 7);
-  if (!idx.length) idx = ks.map((_, i) => i);
-  const i = idx[rnd(idx.length)], f = 1 + rnd(5);
+  const opts = handKeys(keysOfLetter(L, ctx.lo, ctx.hi), hand);
+  const m = opts[rnd(opts.length)], f = 1 + rnd(5);
   return {
     item: L,
-    prompt: `Play the <b>${ordinal(i + 1)} ${L}</b>`,
+    prompt: `Play <b>${nameOf(m)}</b>`,
     sub: `<div class="handline">${handTxt(hand, f)}</div>`,
-    targets: [{ m: ks[i], label: `${ordinal(i + 1)} ${L}` }],
+    targets: [{ m, label: nameOf(m) }],
   };
 }
 
@@ -99,15 +102,13 @@ function mixTask(ctx) {
   const letters = shuffle(LETTERS).slice(0, 3);
   let hand = Math.random() < 0.5 ? "L" : "R";
   const targets = letters.map(L => {
-    const ks = keysOfLetter(L, ctx.lo, ctx.hi);
-    let idx = ks.map((_, i) => i).filter(i => hand === "R" ? ks[i] >= MIDDLE_C - 5 : ks[i] <= MIDDLE_C + 7);
-    if (!idx.length) idx = ks.map((_, i) => i);
-    const i = idx[rnd(idx.length)], f = 1 + rnd(5);
-    const t = { m: ks[i], item: L, label: `${ordinal(i + 1)} ${L} · ${handShort(hand, f)}` };
+    const opts = handKeys(keysOfLetter(L, ctx.lo, ctx.hi), hand);
+    const m = opts[rnd(opts.length)], f = 1 + rnd(5);
+    const t = { m, item: L, label: `${nameOf(m)} · ${handShort(hand, f)}` };
     hand = hand === "L" ? "R" : "L";
     return t;
   });
-  return { item: letters.join(""), ordered: true, prompt: "Play in order:", sub: "Hands alternate. Count from the lowest key.", targets };
+  return { item: letters.join(""), ordered: true, prompt: "Play in order:", sub: "Hands alternate.", targets };
 }
 
 function noteRange(lo, hi) {
@@ -160,7 +161,8 @@ export const LESSONS = [
       },
       {
         title: "Your keyboard",
-        html: `<p>How many keys does your piano have? The exercises say things like <i>"play the 3rd F"</i>, counting from the lowest key — so this must match your real piano.</p>
+        html: `<p>Note names are the same on every piano: <b>middle C is always C4</b>. A smaller keyboard simply has fewer keys at both ends — a 61-key keyboard goes from <b>C2 to C7</b>, a full 88-key piano from <b>A0 to C8</b>.</p>
+               <p>Pick your size so the keyboard on screen looks exactly like yours.</p>
                <div class="seg sizes"></div>
                <p class="muted sizeinfo"></p>`,
         visual: (h, root) => {
@@ -212,17 +214,17 @@ export const LESSONS = [
         make: ctx => { const L = pick(ctx.es, LETTERS, ctx.prev); const n = Math.min(3, keysOfLetter(L, ctx.lo, ctx.hi).length);
           return { item: L, any: { letter: L, count: n }, prompt: `Play <b>${n} different ${L}</b> keys`, sub: "Any order, any finger." }; },
         itemKeys: () => LETTERS, label: letterLabel },
-      { id: "1.2", title: "Count from the bottom", desc: "Play the 2nd, 3rd, 5th… of a letter.", tasks: 8,
-        make: ctx => ordinalTask(ctx, 3), itemKeys: () => LETTERS, label: letterLabel },
+      { id: "1.2", title: "Octave names", desc: "Play F3, F5… — the C labels guide you.", tasks: 8,
+        make: ctx => namesTask(ctx, 3), itemKeys: () => LETTERS, label: letterLabel },
       { id: "1.3", title: "Index finger only", desc: "Same, always with RH 2.", tasks: 8,
-        make: ctx => ordinalTask(ctx, 2, handTxt("R", 2)), itemKeys: () => LETTERS, label: letterLabel },
+        make: ctx => namesTask(ctx, 2, handTxt("R", 2)), itemKeys: () => LETTERS, label: letterLabel },
       { id: "1.4", title: "Right hand, every finger", desc: "One key, a given RH finger.", tasks: 10,
         make: ctx => handTask(ctx, "R"), itemKeys: () => LETTERS, label: letterLabel },
       { id: "1.5", title: "Left hand, every finger", desc: "One key, a given LH finger.", tasks: 10,
         make: ctx => handTask(ctx, "L"), itemKeys: () => LETTERS, label: letterLabel },
       { id: "1.6", title: "Mix it up", desc: "3 keys in order, alternating hands and fingers.", tasks: 6,
         make: mixTask, itemKeys: () => LETTERS, label: letterLabel },
-      { id: "1.7", title: "By note name", desc: "Play F4, C5, A3… with the right hand and finger.", tasks: 10,
+      { id: "1.7", title: "No labels", desc: "Find F4, C5, A3… on a bare keyboard.", tasks: 10, labels: "none",
         make: ctx => {
           const keys = noteRange(ctx.lo, ctx.hi);
           const k = pick(ctx.es, keys, ctx.prev);
