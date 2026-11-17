@@ -132,10 +132,13 @@ function home() {
 function lessonSteps(L, i) {
   const v = shell(`Lesson ${L.id} · ${L.title}`, () => home());
   const step = L.steps[i];
+  v.classList.add("st");
   v.innerHTML = `
     <div class="dots">${L.steps.map((_, j) => `<span class="${j === i ? "on" : j < i ? "done" : ""}"></span>`).join("")}</div>
-    <div class="card stepcard"><div class="stepno">Step ${i + 1} of ${L.steps.length}</div><h2>${step.title}</h2>${step.html}</div>
-    <div class="visual"></div>
+    <div class="stage">
+      <div class="card stepcard"><div class="stepno">Step ${i + 1} of ${L.steps.length}</div><h2>${step.title}</h2>${step.html}</div>
+      <div class="visual"></div>
+    </div>
     <div class="stepnav">
       <button class="mini" data-act="prev" data-shortcut="secondary" ${i === 0 ? "disabled" : ""}>← Back</button>
       <button class="primary" data-act="next" data-shortcut="primary">${i === L.steps.length - 1 ? "Start exercises →" : "Next →"}</button>
@@ -155,16 +158,11 @@ function lessonSteps(L, i) {
 // ---------- exercise ----------
 function exercise(L, lv) {
   const v = shell(`${lv.id} · ${lv.title}`, () => home());
-  v.classList.add(lv.type === "notes" ? "with-names" : "with-kb");
+  v.classList.add("ex", lv.type === "notes" ? "with-names" : "with-kb");
   const nav = { home, criteria: criteriaFor(lv), next: nextOf(L, lv) };
   const stop = lv.type === "notes" ? runNotesExercise(v, lv, nav) : lv.type === "staff" ? runStaffExercise(v, lv, nav) : runKeysExercise(v, lv, nav);
-  // keep content clear of the docked keyboard / name buttons, whatever their height
-  let ro = null;
-  const fitPadding = () => { const d = v.querySelector(".kbdock, .namedock"); v.style.paddingBottom = d ? (d.offsetHeight + 24) + "px" : ""; };
-  if (window.ResizeObserver) { ro = new ResizeObserver(fitPadding); ro.observe(v); }
-  fitPadding();
   if (lv.type !== "notes") addRotateHint(v);
-  cleanup = () => { if (ro) ro.disconnect(); stop && stop(); };
+  cleanup = () => { stop && stop(); };
 }
 
 function addRotateHint(v) {

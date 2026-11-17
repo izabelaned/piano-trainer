@@ -221,12 +221,64 @@ body.midi-on .level.rec .sc { display:block !important; margin:4px 0 0; color:va
   .kbtools { display:none; }
   .kbdock { padding:2px 6px 4px; }
   .progress { gap:8px; }
-  .handviz { margin:0 0 4px; padding-bottom:4px; display:flex; align-items:center; justify-content:center; gap:12px; }
-  .handviz .hands { max-width:260px; margin:0; }
   .task .prompt { font-size:2rem; margin:0 0 2px; }
   .task .sub { font-size:.85rem; }
   .chips { margin-top:2px; }
   .chip { font-size:.9rem; padding:3px 10px; }
   .feedback { font-size:1.05rem; }
   .view .card.staff svg { max-height:46vh; }
+}
+
+/* ---------- fixed-height screens: everything fits above the keyboard, no page scroll ---------- */
+#app:has(.view.ex .kbdock), #app:has(.view.ex .namedock), #app:has(.view.st) {
+  max-width:none; height:100vh; height:100dvh; display:flex; flex-direction:column; overflow:hidden; }
+#app:has(.view.st) { max-width:1200px; }
+.view.ex:has(.kbdock), .view.ex:has(.namedock), .view.st {
+  flex:1; min-height:0; display:flex; flex-direction:column; padding:10px 16px 0 !important; }
+.view.st { padding-bottom:12px !important; }
+.view.ex .kbdock, .view.ex .namedock { position:static; margin:8px -16px 0; flex:none; }
+.view.ex .progress, .view.ex .tempobar, .view.st .dots, .view.st .stepnav { flex:none; }
+
+.stage { flex:1; min-height:0; display:flex; gap:14px; }
+.stage.col { flex-direction:column; gap:6px; }
+.stage > .card { flex:1 1 0; min-width:0; min-height:0; margin:0; overflow:auto; }
+.stage > .card.staff, .stage > .card.task { display:flex; align-items:center; justify-content:center; }
+.stage .card.staff { padding:6px; }
+.stage .card.staff svg { width:100%; height:100%; max-height:none !important; }
+.stage .side { flex:0 0 min(32%, 340px); min-width:0; display:flex; flex-direction:column; justify-content:center; gap:12px; }
+.stage .side .sub.center { margin:0; font-size:1.05rem; line-height:1.6; }
+.stage .side .startbtn { margin:0; }
+.stage.col > .feedback { flex:none; margin:0; }
+
+/* Lesson 1 task: hand picture and the note side by side when there's width */
+.card.task { flex-direction:column; gap:6px; text-align:center; }
+.card.task .taskmain { min-width:0; }
+.card.task .handviz, .card.task .taskmain { align-self:stretch; display:flex; flex-direction:column; justify-content:center; }
+.card.task .handviz:empty { display:none; }
+.card.task .handviz .hands { width:100%; height:auto; max-height:30vh; max-width:520px; margin:0 auto; }
+.taskmain .feedback { margin:8px 0 0; }
+
+/* steps: text and picture side by side */
+.view.st .stage > .stepcard { flex:1 1 0; }
+.view.st .visual { flex:1 1 0; min-width:0; min-height:0; margin:0; overflow:auto; display:flex; flex-direction:column; justify-content:center; gap:8px; }
+.view.st .visual .card { margin:0; }
+.view.st .visual .card.staff svg { max-height:32vh; }
+.view.st .stepnav { margin-top:10px; }
+
+/* the keyboard toolbar carries the MIDI status now */
+.kbtools { gap:10px; }
+.kbtools .midiline { flex:1; text-align:center; font-size:.75rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+/* portrait (taller than wide): stack vertically */
+@media (max-aspect-ratio: 1/1) {
+  .stage { flex-direction:column; gap:8px; }
+  .stage .side { flex:none; gap:4px; }
+  .view.st .stage > .stepcard { flex:1 1 auto; }
+  .view.st .visual { flex:0 1 auto; }
+}
+/* wide: hand picture left, note right */
+@media (min-aspect-ratio: 5/4) {
+  .card.task:has(.handviz:not(:empty)) { flex-direction:row; gap:28px; }
+  .card.task .handviz:not(:empty) { flex:0 0 46%; margin:0; padding:0 24px 0 0; border-bottom:0; border-right:1px solid var(--line); }
+  .card.task .taskmain { flex:1; }
 }

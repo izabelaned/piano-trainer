@@ -38,12 +38,15 @@ export function runStaffExercise(root, level, nav) {
     root.innerHTML = `
       <div class="progress"><button class="mini backmini" title="Back to lessons">←</button><span class="ptxt"></span><div class="bar"><div></div></div><button class="mini restart" data-shortcut="restart" title="Start this round again">↺ Restart</button></div>
       ${tempo ? `<div class="tempobar"><span class="muted">Tempo</span><div class="seg bpm"></div></div>` : ""}
-      <div class="card staff"></div>
-      <div class="sub center"></div>
-      <div class="feedback">&nbsp;</div>
-      ${tempo ? `<button class="primary startbtn">▶ Start</button>` : ""}
-      <div class="midiline muted"></div>
-      <div class="kbdock"><div class="kbtools"><button class="mini" data-act="labels"></button><span class="pressed muted"></span></div><div class="kbhost"></div></div>`;
+      <div class="stage">
+        <div class="card staff"></div>
+        <div class="side">
+          <div class="sub center"></div>
+          <div class="feedback">&nbsp;</div>
+          ${tempo ? `<button class="primary startbtn">▶ Start</button>` : ""}
+        </div>
+      </div>
+      <div class="kbdock"><div class="kbtools"><button class="mini" data-act="labels"></button><span class="midiline muted"></span><span class="pressed muted"></span></div><div class="kbhost"></div></div>`;
     const q = s => root.querySelector(s);
     const kb = new Keyboard(q(".kbhost"), { lo, hi, labels });
     cleanup.push(() => kb.destroy());
@@ -107,7 +110,7 @@ export function runStaffExercise(root, level, nav) {
         // element done
         round.log.push({ item: cur.item, ms: now - tLast, errs: curErrs, said: curSaid });
         colorChord(groups[idx], curErrs ? C.bad : C.ok);
-        cur.midis.forEach(x => kb.set(x, null));
+        cur.midis.forEach(x => { if (kb.state[x] === "hint") kb.set(x, null); kb.flash(x, "ok", 500); });
         idx++; tLast = now; curErrs = 0; curSaid = [];
         if (idx >= task.elems.length) {
           locked = true; fb("ok", "✓ " + task.elems.map(e => keyLabel(e.item)).join(" · "));
