@@ -188,3 +188,26 @@ body.midi-on .level.rec .sc { display:block !important; margin:4px 0 0; color:va
   background:var(--accent); color:#fff; font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; pointer-events:none; }
 .progress .restart { padding:4px 10px; font-size:.78rem; }
 .progress .restart .sc { margin-left:4px; }
+
+/* start gate: Start, then 3 · 2 · 1 · Go! */
+.gate { position:fixed; inset:0; z-index:30; background:rgba(250,248,244,.94); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; }
+.gatestart { width:auto; min-width:220px; font-size:1.4rem; padding:18px 40px; margin:0; }
+.gatehint { font-size:.95rem; }
+.gatenum { font-size:min(38vh, 10rem); font-weight:800; color:var(--accent); line-height:1; animation:pop .75s ease-out; }
+.gatenum.go { color:var(--ok); }
+@keyframes pop { from { transform:scale(1.4); opacity:0; } to { transform:scale(1); opacity:1; } }
+
+/* bigger task content */
+.task .prompt { font-size:clamp(2rem, 7vw, 3rem); margin:4px 0 6px; line-height:1.15; }
+.task .sub, .sub.center { font-size:1rem; }
+.chip { font-size:1.05rem; padding:6px 14px; }
+.handwords { font-size:clamp(1.15rem, 3.6vw, 1.5rem); }
+.handviz .hands { max-width:min(460px, 100%); }
+.feedback { font-size:1.3rem; }
+.view .card.staff svg { max-height:min(52vh, 440px); }
+@media (orientation: landscape) and (max-height: 520px) {
+  .task .prompt { font-size:1.6rem; }
+  .handviz .hands { max-width:220px; }
+  .handwords { font-size:1.05rem; }
+  .view .card.staff svg { max-height:42vh; }
+}

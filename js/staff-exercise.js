@@ -9,6 +9,7 @@ import { finishRound, topHard } from "./engine.js";
 import { renderResults } from "./results.js";
 import { schedule, audio } from "./metronome.js";
 import { positionKeys } from "./lessons.js";
+import { startGate } from "./countdown.js";
 
 const LABEL_CYCLE = ["none", "c", "all"];
 const LABEL_NAMES = { c: "C labels", none: "no labels", all: "all labels" };
@@ -25,6 +26,7 @@ export function runStaffExercise(root, level, nav) {
   let labels = level.labels || "none";
   let cleanup = [];
   let alive = true;
+  let roundId = 0, first = true;
   const timers = new Set();
   const later = (fn, ms) => { const t = setTimeout(() => { timers.delete(t); if (alive) fn(); }, ms); timers.add(t); return t; };
   const stopTimers = () => { timers.forEach(clearTimeout); timers.clear(); };
@@ -64,10 +66,10 @@ export function runStaffExercise(root, level, nav) {
       });
     }
 
-    let task, groups, idx, tLast, curErrs, curSaid, locked, beatState = null;
+    let task, groups, idx, tLast, curErrs, curSaid, locked = true, beatState = null;
 
     function draw() {
-      const svg = svgEl("0 0 300 180");
+      const svg = svgEl("0 22 300 148");
       const card = q(".card.staff"); card.innerHTML = ""; card.appendChild(svg);
       groups = drawMeasure(svg, task.elems.map(e => ({ steps: e.keys.map(k => TREBLE_BY_KEY[k].step), finger: e.finger })), { timeSig: tempo });
     }
@@ -215,8 +217,15 @@ export function runStaffExercise(root, level, nav) {
 
     cleanup.push(onNote(press));
     q(".restart").onclick = () => { beatState = null; startRound(); };
-    nextTask();
-    if (tempo) { const sb = q(".startbtn"); sb.onclick = startMeasure; sb.dataset.shortcut = "primary"; }
+    if (tempo) {
+      // tempo levels have their own Start + 4-click count-in
+      nextTask();
+      const sb = q(".startbtn"); sb.onclick = startMeasure; sb.dataset.shortcut = "primary";
+    } else {
+      const myRound = ++roundId;
+      startGate(root, { needStart: first }).then(() => { if (myRound === roundId && alive) nextTask(); });
+    }
+    first = false;
   }
 
   startRound();

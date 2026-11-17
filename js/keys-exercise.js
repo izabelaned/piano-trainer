@@ -6,6 +6,7 @@ import { onNote, onMidiStatus, midiStatusText } from "./input.js";
 import { finishRound, topHard } from "./engine.js";
 import { renderResults } from "./results.js";
 import { handsSvg, handWords } from "./hands.js";
+import { startGate } from "./countdown.js";
 
 const LABEL_CYCLE = ["c", "none", "all"];
 const LABEL_NAMES = { c: "C labels", none: "no labels", all: "all labels" };
@@ -17,7 +18,7 @@ export function runKeysExercise(root, level, nav) {
   let labels = level.labels || "c";
   let cleanup = [];
 
-  let roundId = 0;
+  let roundId = 0, first = true;
   function startRound() {
     cleanup.forEach(f => f()); cleanup = [];
     const myRound = ++roundId;
@@ -45,7 +46,7 @@ export function runKeysExercise(root, level, nav) {
     showMidi();
     cleanup.push(onMidiStatus(showMidi));
 
-    let task, tStart, tLast, curErrs, curSaid, totalErrs, saidAll, locked, found;
+    let task, tStart, tLast, curErrs, curSaid, totalErrs, saidAll, locked = true, found;
 
     function chipHtml() {
       if (task.any) {
@@ -158,7 +159,8 @@ export function runKeysExercise(root, level, nav) {
 
     cleanup.push(onNote(press));
     q(".restart").onclick = startRound;
-    nextTask();
+    startGate(root, { needStart: first }).then(() => { if (myRound === roundId) nextTask(); });
+    first = false;
   }
 
   startRound();

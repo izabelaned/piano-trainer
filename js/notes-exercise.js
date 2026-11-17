@@ -4,6 +4,7 @@ import { LETTERS, TREBLE_BY_KEY } from "./music.js";
 import { drawStaff, drawNote, svgEl } from "./staff.js";
 import { pick, topHard, finishRound } from "./engine.js";
 import { renderResults, sec } from "./results.js";
+import { startGate } from "./countdown.js";
 
 const lab = L => L;
 const nm = key => lab(key[0]) + key.slice(1);
@@ -13,7 +14,7 @@ export function runNotesExercise(root, level, nav) {
   let timer = null, alive = true;
 
   let roundCleanup = () => {};
-  let roundId = 0;
+  let roundId = 0, first = true;
   function startRound() {
     clearInterval(timer); roundCleanup();
     const myRound = ++roundId;
@@ -25,7 +26,7 @@ export function runNotesExercise(root, level, nav) {
       <div class="feedback">&nbsp;</div>
       <div class="namedock"><div class="keys"></div><div class="kbtip">⌨️ You can also type C D E F G A B</div></div>`;
     const q = s => root.querySelector(s);
-    const svg = svgEl("0 0 300 180");
+    const svg = svgEl("0 22 300 148");
     q(".card.staff").appendChild(svg);
     const keysDiv = q(".keys");
     LETTERS.forEach(L => {
@@ -46,7 +47,7 @@ export function runNotesExercise(root, level, nav) {
     document.addEventListener("keydown", onKey);
     roundCleanup = () => document.removeEventListener("keydown", onKey);
 
-    let cur, t0, locked, noteG = null;
+    let cur, t0, locked = true, noteG = null;
     function draw(color) {
       if (noteG) noteG.remove();
       noteG = drawNote(svg, TREBLE_BY_KEY[cur].step, 190, { color });
@@ -88,7 +89,9 @@ export function runNotesExercise(root, level, nav) {
       renderResults(root, { es, res, label: nm, itemKeys: level.keys, extraInsights: notesInsights,
         unitWord: "correct", onNext: startRound, onHome: nav.home, nav, nextTitle: level.timed ? "Try again" : "Another round" });
     }
-    if (level.timed) {
+    const startTimer = () => {
+      if (!level.timed) return;
+      round.endAt = Date.now() + 60000;
       const tick = () => {
         const left = Math.max(0, round.endAt - Date.now());
         q(".ptxt").textContent = "⏱ " + Math.ceil(left / 1000) + "s · " + round.log.filter(r => !r.errs).length + " correct";
@@ -96,9 +99,11 @@ export function runNotesExercise(root, level, nav) {
         if (left <= 0 && !locked) { locked = true; end(); }
       };
       timer = setInterval(tick, 250); tick();
-    }
+    };
     q(".restart").onclick = startRound;
-    show();
+    if (level.timed) { q(".ptxt").textContent = "⏱ 60s"; }
+    startGate(root, { needStart: first }).then(() => { if (myRound !== roundId || !alive) return; startTimer(); show(); });
+    first = false;
   }
 
   startRound();
