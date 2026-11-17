@@ -162,6 +162,7 @@ ul.ins { margin:0; padding-left:18px; font-size:.92rem; line-height:1.5; }
 .passdots > span:not(:last-child) { width:14px; height:14px; border-radius:50%; background:var(--line); }
 .passdots > span.on { background:var(--ok); }
 .passdots > span:last-child { margin-left:4px; }
+.actions { margin-bottom:14px; }
 .actions .primary { margin-top:8px; }
 .sc { display:none; font-size:.72rem; font-weight:500; opacity:.85; margin-left:8px; white-space:nowrap; }
 body.midi-on .sc { display:inline-block; }
