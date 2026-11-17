@@ -60,9 +60,10 @@ table.names th { text-align:left; font-size:.75rem; font-weight:500; color:var(-
 table.names tr:first-child td { font-weight:700; }
 
 /* keyboard */
-.kb-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; border-radius:8px; }
+.kb-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; }
 .kb { position:relative; margin:0 auto; user-select:none; touch-action:manipulation; }
-.key { position:absolute; top:0; cursor:pointer; display:flex; align-items:flex-end; justify-content:center; }
+.key { position:absolute; top:0; cursor:pointer; display:flex; align-items:flex-end; justify-content:center; -webkit-tap-highlight-color:transparent; outline:none; user-select:none; -webkit-user-select:none; }
+.kb { -webkit-tap-highlight-color:transparent; }
 .key.white { height:100%; background:#fff; border:1px solid #bdb5a8; border-radius:0 0 6px 6px; z-index:1; }
 .key.black { background:#1d1b18; border-radius:0 0 4px 4px; z-index:2; }
 .key .lab { font-size:11px; color:var(--muted); padding-bottom:6px; pointer-events:none; text-align:center; line-height:1.1; }
