@@ -36,7 +36,9 @@ export class Keyboard {
     const avail = this.container.clientWidth || 360;
     const wc = this.whiteCount();
     const w = this.fits() ? avail / wc : Math.max(34, avail / wc);
-    const h = Math.min(150, Math.max(90, w * 4.2));
+    let h = Math.min(150, Math.max(90, w * 4.2));
+    // short landscape phone screens: keep the keyboard low so the task above has room
+    if (window.innerHeight < 520 && window.innerWidth > window.innerHeight) h = Math.max(64, Math.min(h, window.innerHeight * 0.22));
     this.el.innerHTML = "";
     this.el.style.width = (w * wc) + "px";
     this.el.style.height = h + "px";

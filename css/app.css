@@ -162,7 +162,7 @@ ul.ins { margin:0; padding-left:18px; font-size:.92rem; line-height:1.5; }
 .passdots > span:not(:last-child) { width:14px; height:14px; border-radius:50%; background:var(--line); }
 .passdots > span.on { background:var(--ok); }
 .passdots > span:last-child { margin-left:4px; }
-.actions { margin-bottom:14px; }
+.actions { margin:6px 0 28px; }
 .actions .primary { margin-top:8px; }
 .sc { display:none; font-size:.72rem; font-weight:500; opacity:.85; margin-left:8px; white-space:nowrap; }
 body.midi-on .sc { display:inline-block; }
@@ -211,4 +211,22 @@ body.midi-on .level.rec .sc { display:block !important; margin:4px 0 0; color:va
   .handviz .hands { max-width:220px; }
   .handwords { font-size:1.05rem; }
   .view .card.staff svg { max-height:42vh; }
+}
+
+/* landscape phone during an exercise: no header, no keyboard toolbar, compact task */
+.backmini { display:none; }
+@media (orientation: landscape) and (max-height: 520px) {
+  body:has(.view .progress) .top { display:none; }
+  .backmini { display:inline-block; padding:3px 10px; }
+  .kbtools { display:none; }
+  .kbdock { padding:2px 6px 4px; }
+  .progress { gap:8px; }
+  .handviz { margin:0 0 4px; padding-bottom:4px; display:flex; align-items:center; justify-content:center; gap:12px; }
+  .handviz .hands { max-width:260px; margin:0; }
+  .task .prompt { font-size:2rem; margin:0 0 2px; }
+  .task .sub { font-size:.85rem; }
+  .chips { margin-top:2px; }
+  .chip { font-size:.9rem; padding:3px 10px; }
+  .feedback { font-size:1.05rem; }
+  .view .card.staff svg { max-height:46vh; }
 }

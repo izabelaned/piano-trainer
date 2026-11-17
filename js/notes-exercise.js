@@ -21,7 +21,7 @@ export function runNotesExercise(root, level, nav) {
     const size = store.settings.roundSize;
     const round = { i: 0, log: [], prev: null, focus: topHard(es, 3, level.keys), endAt: level.timed ? Date.now() + 60000 : null };
     root.innerHTML = `
-      <div class="progress"><span class="ptxt"></span><div class="bar"><div></div></div><button class="mini restart" data-shortcut="restart" title="Start this round again">↺ Restart</button></div>
+      <div class="progress"><button class="mini backmini" title="Back to lessons">←</button><span class="ptxt"></span><div class="bar"><div></div></div><button class="mini restart" data-shortcut="restart" title="Start this round again">↺ Restart</button></div>
       <div class="card staff"></div>
       <div class="feedback">&nbsp;</div>
       <div class="namedock"><div class="keys"></div><div class="kbtip">⌨️ You can also type C D E F G A B</div></div>`;
@@ -100,6 +100,7 @@ export function runNotesExercise(root, level, nav) {
       };
       timer = setInterval(tick, 250); tick();
     };
+    q(".backmini").onclick = nav.home;
     q(".restart").onclick = startRound;
     if (level.timed) { q(".ptxt").textContent = "⏱ 60s"; }
     startGate(root, { needStart: first }).then(() => { if (myRound !== roundId || !alive) return; startTimer(); show(); });
