@@ -27,7 +27,7 @@ export function renderResults(root, opts) {
   } else {
     html += `<div class="card"><div class="big">
       <div><b>${sum.correct}/${sum.n}</b><span>${opts.unitWord || "clean"}${delta(acc, prevAcc, false, x => Math.round(x) + "%")}</span></div>
-      <div><b>${sum.avgMs ? sec(sum.avgMs) : "–"}</b><span>avg time${delta(sum.avgMs, prevRound && prevRound.avgMs, true, sec)}</span></div>
+      <div><b>${sum.avgMs ? sec(sum.avgMs) : "–"}</b><span>${opts.timeLabel || "avg time"}${delta(sum.avgMs, prevRound && prevRound.avgMs, true, sec)}</span></div>
       <div><b>${es.rounds.length}</b><span>round</span></div></div>
       ${es.passed ? `<div class="passline">✓ Level passed (90%+ clean). You can move on — or keep polishing.</div>`
                   : `<div class="passline muted">Pass this level with 90%+ clean answers in a round.</div>`}</div>`;

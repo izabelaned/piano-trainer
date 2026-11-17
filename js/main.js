@@ -2,6 +2,7 @@ import { store, save, exState } from "./store.js";
 import { LESSONS } from "./lessons.js";
 import { runKeysExercise } from "./keys-exercise.js";
 import { runNotesExercise } from "./notes-exercise.js";
+import { runStaffExercise } from "./staff-exercise.js";
 import { connectMidi, onMidiStatus, midiStatusText, midi } from "./input.js";
 import { SIZES } from "./music.js";
 
@@ -90,7 +91,7 @@ function exercise(L, lv) {
   const v = shell(`${lv.id} · ${lv.title}`, () => home());
   v.classList.add(lv.type === "notes" ? "with-names" : "with-kb");
   const nav = { home };
-  cleanup = lv.type === "notes" ? runNotesExercise(v, lv, nav) : runKeysExercise(v, lv, nav);
+  cleanup = lv.type === "notes" ? runNotesExercise(v, lv, nav) : lv.type === "staff" ? runStaffExercise(v, lv, nav) : runKeysExercise(v, lv, nav);
 }
 
 // ---------- settings ----------

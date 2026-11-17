@@ -2,7 +2,8 @@
 import { LETTERS, SOLF, SIZES, MIDDLE_C, TREBLE, keysOfLetter, ordinal, nameOf, isWhite, letterOf, midiOf, FINGER_NAMES } from "./music.js";
 import { Keyboard } from "./keyboard.js";
 import { onNote, connectMidi, onMidiStatus, midiStatusText } from "./input.js";
-import { drawStaff, drawNote, svgEl, el, yOf } from "./staff.js";
+import { drawStaff, drawNote, svgEl, el, yOf, drawMeasure, colorChord } from "./staff.js";
+import { schedule, audio } from "./metronome.js";
 import { store, save } from "./store.js";
 import { pick } from "./engine.js";
 
@@ -291,9 +292,132 @@ export const LESSONS = [
   {
     id: "3",
     title: "Notes on the keyboard",
-    blurb: "See a note, play it with the right hand. Coming next.",
-    comingSoon: true,
-    steps: [],
-    levels: [],
+    blurb: "See a note on the staff, play it with the right hand — then in time, then two at once.",
+    steps: [
+      {
+        title: "One note, one key",
+        html: `<p>Every note on the staff is <b>exactly one key</b> on the piano. Middle C on its little ledger line is <b>C4</b> — the middle C on your keyboard.</p>
+               <p><b>Try it:</b> play any white key from B3 to B5 and watch where it appears on the staff.</p>`,
+        visual: h => staffAndKb(h, { notes: ["C4"], interactive: true, mark: [60] }),
+      },
+      {
+        title: "Higher on the staff = further right",
+        html: `<p>The same letter appears in many places. <b>C4</b> and <b>C5</b> are both C, one octave apart.</p>
+               <p>The higher a note sits on the staff, the further <b>up</b> (right) the key is on the keyboard.</p>`,
+        visual: h => staffAndKb(h, { notes: ["C4", "C5"], mark: [60, 72] }),
+      },
+      {
+        title: "Your landmarks",
+        html: `<p>Don't count lines every time. Use landmarks and step from them:</p>
+               <ul class="ins"><li><b>C4</b> — middle C, one ledger line below</li><li><b>G4</b> — line 2, where the clef curls</li>
+               <li><b>B4</b> — the middle line</li><li><b>B3</b> and <b>B5</b> — just outside the staff</li></ul>`,
+        visual: h => staffAndKb(h, { notes: ["B3", "C4", "G4", "B4", "B5"], mark: [59, 60, 67, 71, 83] }),
+      },
+      {
+        title: "Right-hand position",
+        html: `<p>Put your <b>right thumb (1) on middle C</b>. Fingers 2, 3, 4, 5 rest on D, E, F, G. This is the <b>C position</b> — one finger per key.</p>
+               <p>Move the whole hand up so the thumb sits on G4 and you're in the <b>G position</b> (G A B C D).</p>
+               <p class="muted">In sheet music, small numbers above the notes tell you which finger to use.</p>`,
+        visual: h => staffAndKb(h, { elems: ["C4", "D4", "E4", "F4", "G4"].map((k, i) => ({ keys: [k], finger: i + 1 })), mark: [60, 62, 64, 65, 67] }),
+      },
+      {
+        title: "Keeping the beat: 4/4",
+        html: `<p>Music is split into <b>bars</b> (measures). <b>4/4</b> at the start means <b>4 beats in every bar</b>.</p>
+               <p>A filled note with a stem is a <b>quarter note</b>: it lasts one beat. A metronome clicks the beats — you'll hear <b>4 clicks to count in</b> ("1, 2, 3, 4"), then play one note on each click.</p>
+               <button class="primary ghost" data-act="hear">▶ Hear it</button>`,
+        visual: (h, root) => {
+          const elems = ["C4", "D4", "E4", "F4"].map(k => ({ keys: [k] }));
+          const { groups, cleanup } = staffAndKb(h, { elems, timeSig: true, mark: [] });
+          let raf = null;
+          root.querySelector('[data-act="hear"]').onclick = () => {
+            audio();
+            const { t0Perf, beatMs } = schedule(8, 60);
+            const tick = () => {
+              const b = Math.floor((performance.now() - t0Perf) / beatMs) - 4;
+              groups.forEach((g, i) => colorChord(g, i === b ? "#3d5a80" : "#1d1b18"));
+              if (b < 4) raf = requestAnimationFrame(tick);
+            };
+            raf = requestAnimationFrame(tick);
+          };
+          return { cleanup: () => { cancelAnimationFrame(raf); cleanup(); } };
+        },
+      },
+      {
+        title: "Two notes at once",
+        html: `<p>When two notes are stacked on <b>one stem</b>, play them <b>together</b>, at the same moment.</p>
+               <p>Use two fingers of the right hand — for example <b>C4 + E4</b> with fingers <b>1 and 3</b>, or <b>C4 + G4</b> with <b>1 and 5</b>.</p>`,
+        visual: h => staffAndKb(h, { elems: [{ keys: ["C4", "E4"] }, { keys: ["D4", "F4"] }, { keys: ["C4", "G4"] }], mark: [60, 64] }),
+      },
+    ],
+    levels: [
+      { id: "3.1", type: "staff", title: "See it, play it", desc: "One note, any right-hand finger.", tasks: 12,
+        make: ctx => { const k = pick(ctx.es, KEYS, ctx.prev); return { elems: [{ keys: [k], item: k }], sub: "Right hand, any finger." }; },
+        itemKeys: () => KEYS },
+      { id: "3.2", type: "staff", title: "With fingering", desc: "One note, the finger number is written above it.", tasks: 12,
+        make: ctx => { const k = pick(ctx.es, KEYS, ctx.prev), f = 1 + rnd(5);
+          return { elems: [{ keys: [k], item: k, finger: f }], sub: `<span class="handline">${handTxt("R", f)}</span>` }; },
+        itemKeys: () => KEYS },
+      { id: "3.3", type: "staff", title: "Five-finger positions", desc: "4 notes in C or G position, fingers written above.", tasks: 6,
+        make: ctx => positionTask(ctx, ["C4", "G4"]), itemKeys: () => KEYS },
+      { id: "3.4", type: "staff", title: "Read ahead", desc: "4 notes anywhere from B3 to B5, play them in order.", tasks: 6,
+        make: ctx => {
+          const elems = []; let prev = ctx.prev;
+          for (let i = 0; i < 4; i++) { const k = pick(ctx.es, KEYS, prev); elems.push({ keys: [k], item: k }); prev = k; }
+          return { elems, sub: "Left to right, right hand. No rush — accuracy first." };
+        }, itemKeys: () => KEYS },
+      { id: "3.5", type: "staff", tempo: true, title: "In time (4/4)", desc: "4 notes, one per metronome click.", tasks: 6,
+        make: ctx => positionTask(ctx, ["C4", "D4", "E4", "F4", "G4", "A4"]), itemKeys: () => KEYS },
+      { id: "3.6", type: "staff", title: "Double notes", desc: "Two notes together, one chord at a time.", tasks: 10,
+        make: ctx => { const k = pick(ctx.es, DYADS, ctx.prev); return { elems: [{ keys: k.split("+"), item: k }], sub: "Both notes together, right hand." }; },
+        itemKeys: () => DYADS },
+      { id: "3.7", type: "staff", tempo: true, title: "Double notes in time", desc: "4 double notes in 4/4. Start slow.", tasks: 6,
+        make: ctx => {
+          const elems = []; let prev = ctx.prev;
+          for (let i = 0; i < 4; i++) { const k = pick(ctx.es, DYADS, prev); elems.push({ keys: k.split("+"), item: k }); prev = k; }
+          return { elems, sub: "Two notes together on every click." };
+        }, itemKeys: () => DYADS },
+    ],
   },
 ];
+
+// ---------- Lesson 3 helpers ----------
+const KEYS = TREBLE.map(n => n.key);
+const DYADS = [];
+TREBLE.forEach((n, i) => [2, 3, 4].forEach(d => { if (TREBLE[i + d]) DYADS.push(n.key + "+" + TREBLE[i + d].key); }));
+
+function positionTask(ctx, starts) {
+  const start = starts[rnd(starts.length)];
+  const i0 = KEYS.indexOf(start);
+  const pos = KEYS.slice(i0, i0 + 5);
+  const elems = []; let prev = ctx.prev;
+  for (let i = 0; i < 4; i++) {
+    const k = pick(ctx.es, pos, prev);
+    elems.push({ keys: [k], item: k, finger: pos.indexOf(k) + 1 });
+    prev = k;
+  }
+  return { elems, sub: `Thumb on <b>${start}</b> · fingers 1–5 on ${pos.join(" ")}` };
+}
+
+function staffAndKb(h, { notes = null, elems = null, timeSig = false, mark = [], interactive = false }) {
+  const card = document.createElement("div");
+  card.className = "card staff";
+  h.appendChild(card);
+  let groups = [];
+  const drawElems = list => {
+    card.innerHTML = "";
+    const svg = svgEl("0 0 300 180");
+    card.appendChild(svg);
+    groups = drawMeasure(svg, list.map(e => ({ steps: e.keys.map(k => TREBLE.find(t => t.key === k).step), finger: e.finger })), { timeSig });
+  };
+  drawElems(elems || notes.map(k => ({ keys: [k] })));
+  const v = kbVisual(h, { lo: 57, hi: 84, labels: interactive ? "none" : "c", info: true,
+    mark: kb => { mark.forEach(m => kb.set(m, "target")); } });
+  let off = () => {};
+  if (interactive) {
+    off = onNote(m => {
+      const k = nameOf(m);
+      if (TREBLE.some(t => t.key === k)) drawElems([{ keys: [k] }]);
+    });
+  }
+  return { groups, cleanup: () => { off(); v.cleanup(); } };
+}

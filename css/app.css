@@ -117,3 +117,12 @@ ul.ins { margin:0; padding-left:18px; font-size:.92rem; line-height:1.5; }
 .check { display:flex; gap:8px; align-items:center; font-size:.9rem; margin-top:8px; }
 .setting p { margin:4px 0; }
 .hands { max-width:360px; margin:0 auto; }
+
+/* lesson 3 */
+.center { text-align:center; }
+.sub.center { color:var(--muted); font-size:.9rem; margin-top:4px; }
+.tempobar { display:flex; align-items:center; gap:10px; justify-content:center; margin-bottom:8px; }
+.tempobar .seg { margin:0; }
+.feedback.count span { display:inline-block; width:34px; color:var(--line); font-size:1.5rem; }
+.feedback.count span.on { color:var(--accent); }
+.startbtn { margin-top:4px; }

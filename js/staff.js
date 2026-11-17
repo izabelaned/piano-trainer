@@ -42,3 +42,52 @@ export function svgEl(viewBox, cls = "") {
   if (cls) s.setAttribute("class", cls);
   return s;
 }
+
+// Chord / single note with classes so it can be recoloured later.
+export function drawChord(svg, steps, x, { color = "#1d1b18", stem = true, finger = null } = {}) {
+  const g = el("g", { class: "chord" }, svg);
+  const lo = Math.min(...steps), hi = Math.max(...steps);
+  for (let s = -2; s >= lo; s -= 2) el("line", { x1: x - 14, x2: x + 14, y1: yOf(s), y2: yOf(s), stroke: "#1d1b18", "stroke-width": 1.2 }, g);
+  for (let s = 10; s <= hi; s += 2) el("line", { x1: x - 14, x2: x + 14, y1: yOf(s), y2: yOf(s), stroke: "#1d1b18", "stroke-width": 1.2 }, g);
+  steps.forEach(s => el("ellipse", { class: "head", cx: x, cy: yOf(s), rx: 7.6, ry: 5.4, fill: color, transform: `rotate(-20 ${x} ${yOf(s)})` }, g));
+  const up = (lo + hi) / 2 < 4;
+  if (stem) {
+    if (up) el("line", { class: "stem", x1: x + 6.8, x2: x + 6.8, y1: yOf(lo) - 1, y2: yOf(hi) - 36, stroke: color, "stroke-width": 1.5 }, g);
+    else el("line", { class: "stem", x1: x - 6.8, x2: x - 6.8, y1: yOf(hi) + 1, y2: yOf(lo) + 36, stroke: color, "stroke-width": 1.5 }, g);
+  }
+  if (finger != null) {
+    const y = Math.min(stem && up ? yOf(hi) - 44 : yOf(hi) - 14, 62);
+    const t = el("text", { x, y, "text-anchor": "middle", "font-size": 13, "font-weight": 700, fill: "#3d5a80", class: "finger" }, g);
+    t.textContent = finger;
+  }
+  return g;
+}
+
+export function colorChord(g, color) {
+  g.querySelectorAll(".head").forEach(e => e.setAttribute("fill", color));
+  g.querySelectorAll(".stem").forEach(e => e.setAttribute("stroke", color));
+}
+
+export function drawTimeSig(svg, x) {
+  [[6, "4"], [2, "4"]].forEach(([s, n]) => {
+    const t = el("text", { x, y: yOf(s) + 8, "text-anchor": "middle", "font-size": 25, "font-weight": 800, fill: "#1d1b18", "font-family": "Georgia,serif" }, svg);
+    t.textContent = n;
+  });
+}
+
+export function drawBar(svg, x, final = false) {
+  el("line", { x1: x, x2: x, y1: yOf(0), y2: yOf(8), stroke: "#1d1b18", "stroke-width": 1.2 }, svg);
+  if (final) el("line", { x1: x + 4, x2: x + 4, y1: yOf(0), y2: yOf(8), stroke: "#1d1b18", "stroke-width": 3.5 }, svg);
+}
+
+// A bar of notes/chords. elems: [{ steps:[...], finger }]. Returns chord groups.
+export function drawMeasure(svg, elems, { timeSig = false, width = 300 } = {}) {
+  drawStaff(svg, { x1: 6, x2: width - 6 });
+  const x0 = timeSig ? 100 : 82;
+  if (timeSig) drawTimeSig(svg, 66);
+  if (elems.length === 1) return [drawChord(svg, elems[0].steps, (x0 + width) / 2 + 10, { finger: elems[0].finger })];
+  const end = width - 26, dx = (end - x0) / elems.length;
+  const groups = elems.map((e, i) => drawChord(svg, e.steps, x0 + dx * (i + 0.45), { finger: e.finger }));
+  drawBar(svg, width - 12, true);
+  return groups;
+}
