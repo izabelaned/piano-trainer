@@ -53,7 +53,9 @@ function namesTask(ctx, k, finger, hand) {
   const L = pick(ctx.es, LETTERS, ctx.prev);
   const all = keysOfLetter(L, ctx.lo, ctx.hi);
   const ks = hand ? handKeys(all, hand) : all;
-  const chosen = shuffle(ks).slice(0, Math.min(k, ks.length)).sort((a, b) => a - b);
+  // shown in mixed order (never simply low to high), so you have to read each one
+  let chosen = shuffle(ks).slice(0, Math.min(k, ks.length));
+  for (let t = 0; t < 10 && chosen.length > 1 && chosen.every((m, i) => i === 0 || m > chosen[i - 1]); t++) chosen = shuffle(chosen);
   const names = chosen.map(nameOf);
   const list = names.length > 1 ? names.slice(0, -1).join(", ") + " and " + names[names.length - 1] : names[0];
   return {
@@ -195,13 +197,13 @@ export const LESSONS = [
       },
     ],
     levels: [
-      { id: "1.1", title: "Find them all", desc: "Play 3 different keys with the same letter.", tasks: 8,
+      { id: "1.1", title: "Find them all", desc: "Play 3 different keys with the same letter.", tasks: 10,
         make: ctx => { const L = pick(ctx.es, LETTERS, ctx.prev); const n = Math.min(3, keysOfLetter(L, ctx.lo, ctx.hi).length);
           return { item: L, any: { letter: L, count: n }, prompt: `Play <b>${n} different ${L}</b> keys`, sub: "Any order, any finger." }; },
         itemKeys: () => LETTERS, label: letterLabel },
-      { id: "1.2", title: "Octave names", desc: "Play F3, F5… — the C labels guide you.", tasks: 8,
+      { id: "1.2", title: "Octave names", desc: "Play F5, F3, F6… — the C labels guide you.", tasks: 10,
         make: ctx => namesTask(ctx, 3), itemKeys: () => LETTERS, label: letterLabel },
-      { id: "1.3", title: "Index finger only", desc: "Same, always with RH 2.", tasks: 8,
+      { id: "1.3", title: "Index finger only", desc: "Same, always with RH 2.", tasks: 10,
         make: ctx => namesTask(ctx, 2, 2, "R"), itemKeys: () => LETTERS, label: letterLabel },
       { id: "1.4", title: "Right hand, every finger", desc: "One key, a given RH finger.", tasks: 10,
         make: ctx => handTask(ctx, "R"), itemKeys: () => LETTERS, label: letterLabel },
