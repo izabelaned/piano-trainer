@@ -165,6 +165,16 @@ function exercise(L, lv) {
   cleanup = () => { stop && stop(); };
 }
 
+// Full screen (Android Chrome etc.); not available on iPhone.
+export async function goFullscreen() {
+  try {
+    await document.documentElement.requestFullscreen();
+    if (screen.orientation && screen.orientation.lock) await screen.orientation.lock("landscape");
+  } catch (e) {}
+}
+if (document.documentElement.requestFullscreen) document.body.classList.add("can-fs");
+document.addEventListener("click", e => { if (e.target.closest(".fsbtn")) goFullscreen(); });
+
 function addRotateHint(v) {
   if (store.settings.hideRotate) return;
   const h = document.createElement("div");
@@ -173,12 +183,7 @@ function addRotateHint(v) {
   h.innerHTML = `<span>📱↻ Turn your phone sideways for a bigger keyboard.</span>
     ${canFs ? `<button class="mini" data-act="fs">Full screen</button>` : ""}<button class="iconbtn" data-act="x" aria-label="Hide">✕</button>`;
   v.prepend(h);
-  if (canFs) h.querySelector('[data-act="fs"]').onclick = async () => {
-    try {
-      await document.documentElement.requestFullscreen();
-      if (screen.orientation && screen.orientation.lock) await screen.orientation.lock("landscape");
-    } catch (e) {}
-  };
+  if (canFs) h.querySelector('[data-act="fs"]').onclick = goFullscreen;
   h.querySelector('[data-act="x"]').onclick = () => { store.settings.hideRotate = true; save(); h.remove(); };
 }
 

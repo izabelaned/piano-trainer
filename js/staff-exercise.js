@@ -36,7 +36,7 @@ export function runStaffExercise(root, level, nav) {
     const focus = topHard(es, 3, level.itemKeys());
     const round = { i: 0, log: [], prev: null, focus, devs: [], missed: 0 };
     root.innerHTML = `
-      <div class="progress"><button class="mini backmini" title="Back to lessons">←</button><span class="ptxt"></span><div class="bar"><div></div></div><button class="mini restart" data-shortcut="restart" title="Start this round again">↺ Restart</button></div>
+      <div class="progress"><button class="mini backmini" title="Back to lessons">←</button><span class="ptxt"></span><div class="bar"><div></div></div><button class="mini fsbtn" title="Full screen">⛶ Full screen</button><button class="mini restart" data-shortcut="restart" title="Start this round again">↺ Restart</button></div>
       ${tempo ? `<div class="tempobar"><span class="muted">Tempo</span><div class="seg bpm"></div></div>` : ""}
       <div class="stage">
         <div class="card staff"></div>

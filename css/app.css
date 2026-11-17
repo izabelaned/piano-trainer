@@ -283,3 +283,10 @@ body.midi-on .level.rec .sc { display:block !important; margin:4px 0 0; color:va
   .card.task .handviz:not(:empty) { flex:0 0 46%; margin:0; padding:0 24px 0 0; border-bottom:0; border-right:1px solid var(--line); }
   .card.task .taskmain { flex:1; }
 }
+
+/* full-screen button in the progress row: phones in landscape, when not already full screen */
+.fsbtn { display:none; padding:4px 10px; font-size:.78rem; }
+@media (orientation: landscape) and (pointer: coarse) {
+  body.can-fs .fsbtn { display:inline-block; }
+  html:fullscreen body.can-fs .fsbtn { display:none; }
+}

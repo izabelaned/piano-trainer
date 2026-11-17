@@ -25,7 +25,7 @@ export function runKeysExercise(root, level, nav) {
     const focus = topHard(es, 3, level.itemKeys ? level.itemKeys(lo, hi) : null);
     const round = { i: 0, log: [], prev: null, focus };
     root.innerHTML = `
-      <div class="progress"><button class="mini backmini" title="Back to lessons">←</button><span class="ptxt"></span><div class="bar"><div></div></div><button class="mini restart" data-shortcut="restart" title="Start this round again">↺ Restart</button></div>
+      <div class="progress"><button class="mini backmini" title="Back to lessons">←</button><span class="ptxt"></span><div class="bar"><div></div></div><button class="mini fsbtn" title="Full screen">⛶ Full screen</button><button class="mini restart" data-shortcut="restart" title="Start this round again">↺ Restart</button></div>
       <div class="stage">
         <div class="card task">
           <div class="handviz"></div>

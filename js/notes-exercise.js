@@ -21,7 +21,7 @@ export function runNotesExercise(root, level, nav) {
     const size = store.settings.roundSize;
     const round = { i: 0, log: [], prev: null, focus: topHard(es, 3, level.keys), endAt: level.timed ? Date.now() + 60000 : null };
     root.innerHTML = `
-      <div class="progress"><button class="mini backmini" title="Back to lessons">←</button><span class="ptxt"></span><div class="bar"><div></div></div><button class="mini restart" data-shortcut="restart" title="Start this round again">↺ Restart</button></div>
+      <div class="progress"><button class="mini backmini" title="Back to lessons">←</button><span class="ptxt"></span><div class="bar"><div></div></div><button class="mini fsbtn" title="Full screen">⛶ Full screen</button><button class="mini restart" data-shortcut="restart" title="Start this round again">↺ Restart</button></div>
       <div class="stage col">
         <div class="card staff"></div>
         <div class="feedback">&nbsp;</div>
