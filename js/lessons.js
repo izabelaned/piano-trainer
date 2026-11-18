@@ -345,7 +345,7 @@ export const LESSONS = [
         make: ctx => singleTask(ctx, true), itemKeys: () => KEYS },
       { id: "3.3", type: "staff", title: "Five-finger positions", desc: "4 notes in C or G position, fingers written above.", tasks: 6,
         make: ctx => phraseTask(ctx, ["C4", "G4"]), itemKeys: () => KEYS },
-      { id: "3.4", type: "staff", title: "Read ahead", desc: "4 notes from C4 to B5 with steps and leaps, play them in order.", tasks: 6,
+      { id: "3.4", type: "staff", title: "Read ahead", desc: "4 notes with steps and leaps; fingers written only where the hand moves.", tasks: 6,
         make: ctx => leapTask(ctx), itemKeys: () => KEYS },
       { id: "3.5", type: "staff", tempo: true, title: "In time (4/4)", desc: "4 notes, one per metronome click.", tasks: 6,
         make: ctx => phraseTask(ctx, ["C4", "D4", "E4", "F4", "G4", "A4"]), itemKeys: () => KEYS },
@@ -427,16 +427,26 @@ function phraseTask(ctx, starts) {
 }
 
 // 3.4: steps and leaps across the whole range, continuing from the previous phrase.
+// Like real sheet music, a finger number is written only where the hand has to move
+// (and on the first note); in between you stay in the same five-finger position.
 function leapTask(ctx) {
   const st = ctx.state;
   const elems = [];
   for (let i = 0; i < 4; i++) {
     const cand = range(0, KEYS.length - 1);
     const w = cand.map(j => (st.last == null ? 1 : (LEAP_W[Math.abs(j - st.last)] || 0.1)) * diff(ctx, KEYS[j]));
-    const j = weighted(cand, w); st.last = j;
-    elems.push({ keys: [KEYS[j]], item: KEYS[j] });
+    const j = weighted(cand, w);
+    let moved = false;
+    if (st.p == null || j < st.p || j > st.p + 4) {
+      // going up: thumb lands on the new note; going down: pinky lands on it
+      st.p = st.p == null || j > st.p + 4 ? Math.min(j, MAX_THUMB) : Math.max(j - 4, 0);
+      moved = true;
+    }
+    st.last = j;
+    const f = j - st.p + 1;
+    elems.push({ keys: [KEYS[j]], item: KEYS[j], finger: moved || i === 0 ? f : null });
   }
-  return { elems, sub: "Left to right, right hand. Small steps, some leaps — no rush." };
+  return { elems, sub: "A finger number appears only where your hand moves — stay in that position until the next number." };
 }
 
 // 3.6 / 3.7: double notes that fit one hand position, with fingering, moving smoothly.
