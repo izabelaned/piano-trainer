@@ -197,7 +197,7 @@ function settings(back) {
   v.innerHTML = `
     <div class="card setting"><b>Piano / MIDI</b><p class="muted midistatus">${midiStatusText()}</p>
       <button class="primary ghost" data-act="midi">🎹 Connect piano (MIDI)</button></div>
-    <div class="card setting"><b>Piano shortcuts</b><p class="muted">Press 3 black keys together (2 for “another round”) instead of touching the screen. They follow your keyboard size and only work for buttons that are on screen.</p>
+    <div class="card setting"><b>Piano shortcuts</b><p class="muted">Press a group of black keys together instead of touching the screen: the top groups move you forward, the bottom groups take you back. They follow your keyboard size and only work for buttons that are on screen.</p>
       <table class="sctable"><tr><td>Next / Continue / Start</td><td><b>${comboName("primary")}</b></td></tr>
       <tr><td>Another round / previous step</td><td><b>${comboName("secondary")}</b></td></tr>
       <tr><td>Back (← top left)</td><td><b>${comboName("back")}</b></td></tr>

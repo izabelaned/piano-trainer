@@ -24,17 +24,22 @@ function onMessage(e) {
 }
 
 // ---------- piano shortcuts ----------
-// Black-key chords far from where you play. Exercises never ask for black keys,
-// so these can't be confused with answers. They follow the selected keyboard size.
+// Black-key chords at the two ends of the keyboard, far from where you play. Exercises
+// never ask for black keys, so these can't be confused with answers. They follow the keyboard size:
+// the top groups confirm, the bottom groups go back / restart.
 export function comboKeys() {
+  // all complete groups of black keys on this keyboard (2 = C# D#, 3 = F# G# A#), low to high
   const [lo, hi] = SIZES[store.settings.size];
-  let c = lo; while (c % 12) c++;               // lowest full octave
-  let t = hi - 10; while (t % 12) t--;          // highest octave with a full 3-black group
+  const groups = [];
+  for (let c = lo - (lo % 12); c <= hi; c += 12) {
+    [[c + 1, c + 3], [c + 6, c + 8, c + 10]].forEach(g => { if (g[0] >= lo && g[g.length - 1] <= hi) groups.push(g); });
+  }
+  const n = groups.length;
   return {
-    primary: [c + 6, c + 8, c + 10],            // F# G# A# at the bottom
-    secondary: [c + 1, c + 3],                  // C# D# at the bottom
-    back: [t + 6, t + 8, t + 10],               // F# G# A# at the top
-    restart: [t + 1, t + 3],                    // C# D# at the top
+    primary: groups[n - 1],      // highest group: Next / Continue / Start
+    secondary: groups[n - 2],    // the group before it: Another round / previous step
+    back: groups[0],             // lowest group: back / home
+    restart: groups[1],          // the next one up: restart the round
   };
 }
 export const comboName = action => comboKeys()[action].map(nameOf).join(" ");
