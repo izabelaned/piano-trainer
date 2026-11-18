@@ -7,7 +7,7 @@ import { onNote, onMidiStatus, midiStatusText } from "./input.js";
 import { svgEl, drawMeasure, colorChord } from "./staff.js";
 import { finishRound, topHard } from "./engine.js";
 import { renderResults } from "./results.js";
-import { schedule, audio } from "./metronome.js";
+import { schedule, audio, stopClicks } from "./metronome.js";
 import { positionKeys } from "./lessons.js";
 import { startGate } from "./countdown.js";
 
@@ -32,7 +32,7 @@ export function runStaffExercise(root, level, nav) {
   const stopTimers = () => { timers.forEach(clearTimeout); timers.clear(); };
 
   function startRound() {
-    cleanup.forEach(f => f()); cleanup = []; stopTimers();
+    cleanup.forEach(f => f()); cleanup = []; stopTimers(); stopClicks();
     const focus = topHard(es, 3, level.itemKeys());
     const round = { i: 0, log: [], prev: null, focus, devs: [], missed: 0 };
     root.innerHTML = `
@@ -233,5 +233,5 @@ export function runStaffExercise(root, level, nav) {
   }
 
   startRound();
-  return () => { alive = false; stopTimers(); cleanup.forEach(f => f()); };
+  return () => { alive = false; stopTimers(); stopClicks(); cleanup.forEach(f => f()); };
 }

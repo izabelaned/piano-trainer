@@ -3,7 +3,7 @@ import { LETTERS, SIZES, MIDDLE_C, TREBLE, keysOfLetter, nameOf, isWhite, letter
 import { Keyboard } from "./keyboard.js";
 import { onNote, connectMidi, onMidiStatus, midiStatusText } from "./input.js";
 import { drawStaff, drawNote, svgEl, el, yOf, drawMeasure, colorChord } from "./staff.js";
-import { schedule, audio } from "./metronome.js";
+import { schedule, audio, stopClicks } from "./metronome.js";
 import { store, save } from "./store.js";
 import { pick, difficulty } from "./engine.js";
 import { handsSvg, handWords } from "./hands.js";
@@ -328,7 +328,7 @@ export const LESSONS = [
             };
             raf = requestAnimationFrame(tick);
           };
-          return { cleanup: () => { cancelAnimationFrame(raf); cleanup(); } };
+          return { cleanup: () => { cancelAnimationFrame(raf); stopClicks(); cleanup(); } };
         },
       },
       {

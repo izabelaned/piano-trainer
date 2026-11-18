@@ -1,5 +1,6 @@
 // Metronome clicks with the Web Audio API.
 let ctx = null;
+const pending = new Set();   // clicks scheduled but maybe not played yet
 
 export function audio() {
   if (!ctx) {
@@ -19,6 +20,14 @@ function click(c, t, accent) {
   g.gain.exponentialRampToValueAtTime(0.0001, t + 0.05);
   o.connect(g).connect(c.destination);
   o.start(t); o.stop(t + 0.06);
+  pending.add(o);
+  o.onended = () => pending.delete(o);
+}
+
+// Silence every click that is still scheduled (restart, leaving the screen…).
+export function stopClicks() {
+  pending.forEach(o => { try { o.stop(); o.disconnect(); } catch (e) {} });
+  pending.clear();
 }
 
 // Schedule n clicks. Returns beat 0 in performance.now() time and the beat length in ms.
