@@ -18,6 +18,16 @@ function load() {
     delete d.settings.solf;
     d.ex = s.ex || {};
     d.lessonSeen = s.lessonSeen || {};
+    d.mig4 = s.mig4;
+  }
+  // Tempo levels moved to Lesson 4: old 3.5 → 4.2, old 3.6 (double notes) → 3.5, old 3.7 → 4.4
+  if (!d.mig4) {
+    const ex = d.ex, o35 = ex["3.5"], o36 = ex["3.6"], o37 = ex["3.7"];
+    delete ex["3.5"]; delete ex["3.6"]; delete ex["3.7"];
+    if (o35) { ex["4.2"] = o35; delete o35.critV; }
+    if (o36) { ex["3.5"] = o36; delete o36.critV; }
+    if (o37) { ex["4.4"] = o37; delete o37.critV; }
+    d.mig4 = true;
   }
   // Carry over stats from the first version of the note trainer.
   try {

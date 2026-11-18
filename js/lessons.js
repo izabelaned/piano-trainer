@@ -281,7 +281,7 @@ export const LESSONS = [
   {
     id: "3",
     title: "Notes on the keyboard",
-    blurb: "See a note on the staff, play it with the right hand — then in time, then two at once.",
+    blurb: "See a note on the staff, play it with the right hand — then two at once.",
     steps: [
       {
         title: "One note, one key",
@@ -310,28 +310,6 @@ export const LESSONS = [
         visual: h => staffAndKb(h, { elems: ["C4", "D4", "E4", "F4", "G4"].map((k, i) => ({ keys: [k], finger: i + 1 })), mark: [60, 62, 64, 65, 67] }),
       },
       {
-        title: "Keeping the beat: 4/4",
-        html: `<p>Music is split into <b>bars</b> (measures). <b>4/4</b> at the start means <b>4 beats in every bar</b>.</p>
-               <p>A filled note with a stem is a <b>quarter note</b>: it lasts one beat. A metronome clicks the beats — you'll hear <b>4 clicks to count in</b> ("1, 2, 3, 4"), then play one note on each click.</p>
-               <button class="primary ghost" data-act="hear">▶ Hear it</button>`,
-        visual: (h, root) => {
-          const elems = ["C4", "D4", "E4", "F4"].map(k => ({ keys: [k] }));
-          const { groups, cleanup } = staffAndKb(h, { elems, timeSig: true, mark: [] });
-          let raf = null;
-          root.querySelector('[data-act="hear"]').onclick = () => {
-            audio();
-            const { t0Perf, beatMs } = schedule(8, 60);
-            const tick = () => {
-              const b = Math.floor((performance.now() - t0Perf) / beatMs) - 4;
-              groups.forEach((g, i) => colorChord(g, i === b ? "#3d5a80" : "#1d1b18"));
-              if (b < 4) raf = requestAnimationFrame(tick);
-            };
-            raf = requestAnimationFrame(tick);
-          };
-          return { cleanup: () => { cancelAnimationFrame(raf); stopClicks(); cleanup(); } };
-        },
-      },
-      {
         title: "Two notes at once",
         html: `<p>When two notes are stacked on <b>one stem</b>, play them <b>together</b>, at the same moment.</p>
                <p>Use two fingers of the right hand — for example <b>C4 + E4</b> with fingers <b>1 and 3</b>, or <b>C4 + G4</b> with <b>1 and 5</b>.</p>`,
@@ -347,11 +325,53 @@ export const LESSONS = [
         make: ctx => phraseTask(ctx, ["C4", "G4"]), itemKeys: () => KEYS },
       { id: "3.4", type: "staff", title: "Read ahead", desc: "4 notes with steps and leaps; fingers written only where the hand moves.", tasks: 6,
         make: ctx => leapTask(ctx), itemKeys: () => KEYS },
-      { id: "3.5", type: "staff", tempo: true, title: "In time (4/4)", desc: "4 notes, one per metronome click.", tasks: 7,
-        make: ctx => phraseTask(ctx, ["C4", "D4", "E4", "F4", "G4", "A4"]), itemKeys: () => KEYS },
-      { id: "3.6", type: "staff", title: "Double notes", desc: "Two notes together, one chord at a time.", tasks: 10, pass: { maxMs: 3000 },
+      { id: "3.5", type: "staff", title: "Double notes", desc: "Two notes together, one chord at a time.", tasks: 10, pass: { maxMs: 3000 },
         make: ctx => dyadTask(ctx, 1), itemKeys: () => DYADS },
-      { id: "3.7", type: "staff", tempo: true, title: "Double notes in time", desc: "4 double notes in 4/4.", tasks: 7, pass: { maxMs: 200 },
+    ],
+  },
+  {
+    id: "4",
+    title: "Playing in time",
+    blurb: "The beat, bars in 4/4, and playing with a metronome — slow first, then a bit faster.",
+    steps: [
+      {
+        title: "The beat",
+        html: `<p>Music has a steady pulse called the <b>beat</b> — what you tap your foot to.</p>
+               <p>A <b>metronome</b> clicks the beat for you. Its speed is in <b>bpm</b> (beats per minute): 50 bpm is calm, a bit more than one second per click.</p>
+               <button class="primary ghost" data-act="hear">▶ Hear 50 bpm</button>`,
+        visual: (h, root) => beatDemo(h, root, { bpm: 50, timeSig: false }),
+      },
+      {
+        title: "Bars and 4/4",
+        html: `<p>Music is split into <b>bars</b> (measures), separated by bar lines. <b>4/4</b> at the start means <b>4 beats in every bar</b>.</p>
+               <p>A filled note with a stem is a <b>quarter note</b>: it lasts one beat. So a bar of 4/4 holds 4 quarter notes — count them “1, 2, 3, 4”.</p>
+               <button class="primary ghost" data-act="hear">▶ Hear it</button>`,
+        visual: (h, root) => beatDemo(h, root, { bpm: 50, timeSig: true }),
+      },
+      {
+        title: "Count in, then play",
+        html: `<p>Every bar starts with <b>4 clicks to count in</b>. Then play <b>one note on each click</b>.</p>
+               <ul class="ins"><li>During the count-in the <b>hand position lights up</b> on the keyboard — put your hand there.</li>
+               <li>Keep your eyes <b>one note ahead</b> of your fingers.</li>
+               <li>Missed a note? <b>Don't stop</b> — catch the next click.</li>
+               <li><b>Slow and correct</b> beats fast and wrong. Speed comes later on its own.</li></ul>`,
+        visual: h => staffAndKb(h, { elems: ["C4", "E4", "D4", "F4"].map(k => ({ keys: [k], finger: KEYS.indexOf(k) + 1 })), timeSig: true, mark: [60, 62, 64, 65, 67] }),
+      },
+      {
+        title: "Two notes in time",
+        html: `<p>Double notes work the same way: <b>both notes together, on the click</b>.</p>
+               <p class="muted">Start this only once single notes in time feel calm.</p>`,
+        visual: h => staffAndKb(h, { elems: [{ keys: ["C4", "E4"], finger: [1, 3] }, { keys: ["D4", "F4"], finger: [2, 4] }, { keys: ["E4", "G4"], finger: [3, 5] }, { keys: ["C4", "E4"], finger: [1, 3] }], timeSig: true, mark: [] }),
+      },
+    ],
+    levels: [
+      { id: "4.1", type: "staff", tempo: true, bpm: 50, title: "Keep the beat", desc: "One note per bar, played 4 times on the clicks. 50 bpm.", tasks: 7,
+        make: ctx => repeatTask(ctx), itemKeys: () => KEYS },
+      { id: "4.2", type: "staff", tempo: true, bpm: 50, title: "Steps in time", desc: "4 notes in a five-finger position. 50 bpm.", tasks: 7,
+        make: ctx => phraseTask(ctx, ["C4", "D4", "E4", "F4", "G4", "A4"]), itemKeys: () => KEYS },
+      { id: "4.3", type: "staff", tempo: true, bpm: 66, title: "A bit faster", desc: "Same as 4.2 at 66 bpm.", tasks: 7,
+        make: ctx => phraseTask(ctx, ["C4", "D4", "E4", "F4", "G4", "A4"]), itemKeys: () => KEYS },
+      { id: "4.4", type: "staff", tempo: true, bpm: 50, title: "Double notes in time", desc: "4 double notes per bar. 50 bpm.", tasks: 7, pass: { maxMs: 200 },
         make: ctx => dyadTask(ctx, 4), itemKeys: () => DYADS },
     ],
   },
@@ -483,6 +503,34 @@ function dyadTask(ctx, count) {
 }
 
 export const positionKeys = p => KEYS.slice(p, p + 5);
+
+// 4.1: one note per bar, played on all 4 beats — pure timing, nothing else to think about.
+function repeatTask(ctx) {
+  const options = ["C4", "D4", "E4", "F4", "G4", "A4"].map(k => KEYS.indexOf(k));
+  const p = choosePos(ctx, options);
+  const moved = ctx.state.p !== p; ctx.state.p = p;
+  const j = nextInPos(ctx, p, null), k = KEYS[j], f = j - p + 1;
+  return { pos: { thumb: p, moved }, elems: [0, 1, 2, 3].map(i => ({ keys: [k], item: k, finger: i === 0 ? f : null })),
+    sub: `Thumb on <b>${KEYS[p]}</b> · the same note 4 times` };
+}
+
+// Metronome demo for the Lesson 4 steps: clicks, and the beat lights up on the staff.
+function beatDemo(h, root, { bpm, timeSig }) {
+  const elems = ["C4", "D4", "E4", "F4"].map(k => ({ keys: [k] }));
+  const { groups, cleanup } = staffAndKb(h, { elems, timeSig, mark: [] });
+  let raf = null;
+  root.querySelector('[data-act="hear"]').onclick = () => {
+    audio(); stopClicks(); cancelAnimationFrame(raf);
+    const { t0Perf, beatMs } = schedule(8, bpm);
+    const tick = () => {
+      const b = Math.floor((performance.now() - t0Perf) / beatMs) - 4;
+      groups.forEach((g, i) => colorChord(g, i === b ? "#3d5a80" : "#1d1b18"));
+      if (b < 4) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+  };
+  return { cleanup: () => { cancelAnimationFrame(raf); stopClicks(); cleanup(); } };
+}
 
 function range(a, b) { const r = []; for (let i = a; i <= b; i++) r.push(i); return r; }
 

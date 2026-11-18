@@ -37,7 +37,6 @@ export function runStaffExercise(root, level, nav) {
     const round = { i: 0, log: [], prev: null, focus, devs: [], missed: 0 };
     root.innerHTML = `
       <div class="progress"><button class="mini backmini" title="Back to lessons">←</button><span class="ptxt"></span><div class="bar"><div></div></div><button class="mini fsbtn" title="Full screen">⛶ Full screen</button><button class="mini restart" data-shortcut="restart" title="Start this round again">↺ Restart</button></div>
-      ${tempo ? `<div class="tempobar"><span class="muted">Tempo</span><div class="seg bpm"></div></div>` : ""}
       <div class="stage">
         <div class="card staff"></div>
         <div class="side">
@@ -59,15 +58,6 @@ export function runStaffExercise(root, level, nav) {
     cleanup.push(onMidiStatus(showMidi));
     const fb = (cls, txt) => { const f = q(".feedback"); f.className = "feedback " + cls; f.innerHTML = txt; };
 
-    if (tempo) {
-      const seg = q(".bpm");
-      [50, 60, 72, 90].forEach(b => {
-        const btn = document.createElement("button"); btn.textContent = b;
-        btn.className = (store.settings.bpm || 60) === b ? "on" : "";
-        btn.onclick = () => { store.settings.bpm = b; save(); seg.querySelectorAll("button").forEach(x => x.classList.toggle("on", x === btn)); };
-        seg.appendChild(btn);
-      });
-    }
 
     let task, groups, idx, tLast, curErrs, curSaid, locked = true, beatState = null;
 
@@ -85,13 +75,13 @@ export function runStaffExercise(root, level, nav) {
       idx = 0; curErrs = 0; curSaid = []; locked = false;
       q(".ptxt").textContent = (round.i + 1) + " / " + tasksPerRound;
       q(".bar > div").style.width = (round.i / tasksPerRound * 100) + "%";
-      q(".sub").innerHTML = task.sub || "";
+      q(".sub").innerHTML = (tempo ? `<div class="bpmtag">♩ = ${level.bpm || 60} bpm</div>` : "") + (task.sub || "");
       draw();
       if (!tempo) { colorChord(groups[0], task.elems.length > 1 ? C.cur : C.ink); fb("", "&nbsp;"); tLast = performance.now(); }
       else { locked = true; fb("", round.i === 0 ? "Press Start, listen to 4 clicks, then play one note per click." : "&nbsp;"); }
       kb.scrollTo(task.elems[0].midis[0]);
       // New hand position: show the 5 keys with finger numbers until you start playing.
-      if (task.pos && task.pos.moved) {
+      if (task.pos && (task.pos.moved || tempo)) {   // in time: show it every bar, there's no time to think
         const map = {};
         positionKeys(task.pos.thumb).forEach((k, i) => { map[midiOfKey(k)] = i + 1; });
         kb.showFingers(map);
@@ -128,8 +118,7 @@ export function runStaffExercise(root, level, nav) {
     function startMeasure() {
       audio();       // unlock audio inside the click
       const btn = q(".startbtn"); if (btn) btn.style.visibility = "hidden";
-      const bpm = store.settings.bpm || 60;
-      round.minBpm = Math.min(round.minBpm || Infinity, bpm);
+      const bpm = level.bpm || 60;
       const { t0Perf, beatMs } = schedule(8, bpm);
       const exp = task.elems.map((_, j) => t0Perf + (4 + j) * beatMs);
       beatState = { t0Perf, beatMs, exp };
@@ -201,7 +190,7 @@ export function runStaffExercise(root, level, nav) {
 
     function endRound() {
       cleanup.forEach(f => f()); cleanup = []; stopTimers(); beatState = null;
-      const res = finishRound(es, round.log, { focus: round.focus, criteria: nav.criteria, bpm: tempo ? round.minBpm : null });
+      const res = finishRound(es, round.log, { focus: round.focus, criteria: nav.criteria, bpm: tempo ? level.bpm : null });
       save();
       const extra = () => {
         if (!tempo) return [];

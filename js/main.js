@@ -17,7 +17,7 @@ const ALL = LESSONS.flatMap(L => L.levels.map(lv => ({ L, lv })));
 function criteriaFor(lv) {
   let base;
   if (lv.timed) base = { minScore: 25 };
-  else if (lv.tempo) base = { acc: 0.9, maxMs: 150, minBpm: 60, timeName: "Avg off-beat" };
+  else if (lv.tempo) base = { acc: 0.9, maxMs: 150, timeName: "Avg off-beat" };
   else if (lv.type === "notes") base = { acc: 0.9, maxMs: 2000 };
   else base = { acc: 0.9, maxMs: 3000 };
   return Object.assign(base, lv.pass || {});

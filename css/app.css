@@ -290,3 +290,4 @@ body.midi-on .level.rec .sc { display:block !important; margin:4px 0 0; color:va
   body.can-fs .fsbtn { display:inline-block; }
   html:fullscreen body.can-fs .fsbtn { display:none; }
 }
+.bpmtag { display:table; margin-left:auto; margin-right:auto; font-weight:700; color:var(--accent); background:#e8eef5; border-radius:10px; padding:3px 10px; margin-bottom:6px; }
