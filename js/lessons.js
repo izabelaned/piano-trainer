@@ -275,7 +275,7 @@ export const LESSONS = [
       { id: "2.2", type: "notes", title: "Space notes", desc: "F A C E only.", pass: { maxMs: 1000 }, keys: ["F4", "A4", "C5", "E5"] },
       { id: "2.3", type: "notes", title: "The whole staff", desc: "E4 to F5, lines and spaces.", keys: TREBLE.filter(n => n.step >= 0 && n.step <= 8).map(n => n.key) },
       { id: "2.4", type: "notes", title: "With ledger lines", desc: "Full range B3 to B5.", keys: TREBLE.map(n => n.key) },
-      { id: "2.5", type: "notes", title: "60-second challenge", desc: "How many can you name in a minute? Pass: 25.", keys: TREBLE.map(n => n.key), timed: true },
+      { id: "2.5", type: "notes", optional: true, title: "60-second challenge", desc: "How many can you name in a minute? Pass: 25.", keys: TREBLE.map(n => n.key), timed: true },
     ],
   },
   {
@@ -317,15 +317,21 @@ export const LESSONS = [
       },
     ],
     levels: [
-      { id: "3.1", type: "staff", title: "See it, play it", desc: "One note at a time, any right-hand finger.", tasks: 12,
-        make: ctx => singleTask(ctx, false), itemKeys: () => KEYS },
-      { id: "3.2", type: "staff", title: "With fingering", desc: "One note at a time, the finger number is written above it.", tasks: 12,
+      { id: "3.1", type: "staff", title: "Line notes", desc: "E G B D F — find each one on the keyboard, any finger.", tasks: 12,
+        make: ctx => plainTask(ctx, LINE_KEYS), itemKeys: () => LINE_KEYS },
+      { id: "3.2", type: "staff", title: "Space notes", desc: "F A C E — any finger.", tasks: 12,
+        make: ctx => plainTask(ctx, SPACE_KEYS), itemKeys: () => SPACE_KEYS },
+      { id: "3.3", type: "staff", title: "The whole staff", desc: "E4 to F5, lines and spaces — any finger.", tasks: 12,
+        make: ctx => plainTask(ctx, STAFF_KEYS), itemKeys: () => STAFF_KEYS },
+      { id: "3.4", type: "staff", title: "With ledger lines", desc: "C4 to B5 — any finger.", tasks: 12,
+        make: ctx => plainTask(ctx, KEYS), itemKeys: () => KEYS },
+      { id: "3.5", type: "staff", title: "With fingering", desc: "Now the finger counts: one note at a time, finger number above it.", tasks: 12,
         make: ctx => singleTask(ctx, true), itemKeys: () => KEYS },
-      { id: "3.3", type: "staff", title: "Five-finger positions", desc: "4 notes in C or G position, fingers written above.", tasks: 6,
+      { id: "3.6", type: "staff", title: "Five-finger positions", desc: "4 notes in C or G position, fingers written above.", tasks: 6,
         make: ctx => phraseTask(ctx, ["C4", "G4"]), itemKeys: () => KEYS },
-      { id: "3.4", type: "staff", title: "Read ahead", desc: "4 notes with steps and leaps; fingers written only where the hand moves.", tasks: 6,
+      { id: "3.7", type: "staff", title: "Read ahead", desc: "4 notes with steps and leaps; fingers written only where the hand moves.", tasks: 6,
         make: ctx => leapTask(ctx), itemKeys: () => KEYS },
-      { id: "3.5", type: "staff", title: "Double notes", desc: "Two notes together, one chord at a time.", tasks: 10, pass: { maxMs: 3000 },
+      { id: "3.8", type: "staff", title: "Double notes", desc: "Two notes together, one chord at a time.", tasks: 10, pass: { maxMs: 3000 },
         make: ctx => dyadTask(ctx, 1), itemKeys: () => DYADS },
     ],
   },
@@ -382,7 +388,16 @@ export const LESSONS = [
 const KEYS = TREBLE.filter(n => n.key !== "B3").map(n => n.key);   // C4 … B5
 const DYADS = [];
 KEYS.forEach((k, i) => [2, 3, 4].forEach(d => { if (KEYS[i + d]) DYADS.push(k + "+" + KEYS[i + d]); }));
-const MAX_THUMB = KEYS.length - 5;                                    // thumb can go up to F5
+const MAX_THUMB = KEYS.length - 5;
+const LINE_KEYS = ["E4", "G4", "B4", "D5", "F5"];
+const SPACE_KEYS = ["F4", "A4", "C5", "E5"];
+const STAFF_KEYS = ["E4", "F4", "G4", "A4", "B4", "C5", "D5", "E5", "F5"];
+
+// 3.1–3.4: just find the note on the keyboard — no hand position, no fingering.
+function plainTask(ctx, keys) {
+  const k = pick(ctx.es, keys, ctx.prev);
+  return { elems: [{ keys: [k], item: k }], sub: "Find it on the keyboard — any finger." };
+}                                    // thumb can go up to F5
 
 // How likely each melodic interval is (in steps). Mostly steps and small skips, like real tunes.
 const STEP_W = { 0: 0.15, 1: 3, 2: 2.2, 3: 1.2, 4: 0.8 };

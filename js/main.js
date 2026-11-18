@@ -28,7 +28,9 @@ function isUnlocked(lv) {
   if (i === 0) return true;
   const es = store.ex[lv.id];
   if (es && es.rounds.length) return true;          // already practised before levels were locked
-  const prev = store.ex[ALL[i - 1].lv.id];
+  let j = i - 1;
+  while (j > 0 && ALL[j].lv.optional) j--;          // optional levels (e.g. the 60s challenge) don't block
+  const prev = store.ex[ALL[j].lv.id];
   return !!(prev && prev.passed);
 }
 
