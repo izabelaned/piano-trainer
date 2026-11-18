@@ -432,10 +432,21 @@ function phraseTask(ctx, starts) {
 function leapTask(ctx) {
   const st = ctx.state;
   const elems = [];
+  let leaps = 0, lastMove = 0;      // lastMove: signed interval of the previous note
   for (let i = 0; i < 4; i++) {
     const cand = range(0, KEYS.length - 1);
-    const w = cand.map(j => (st.last == null ? 1 : (LEAP_W[Math.abs(j - st.last)] || 0.1)) * diff(ctx, KEYS[j]));
+    const w = cand.map(j => {
+      if (st.last == null) return diff(ctx, KEYS[j]);
+      const d = j - st.last, a = Math.abs(d);
+      let wt = LEAP_W[a] || 0.1;
+      if (a > 2 && leaps >= 1) wt = 0;                        // at most one leap per phrase
+      if (Math.abs(lastMove) > 2) {                           // after a leap: a step or small skip…
+        wt = a <= 2 && a > 0 ? wt * (Math.sign(d) !== Math.sign(lastMove) ? 3 : 1) : 0;   // …preferably back
+      }
+      return wt * diff(ctx, KEYS[j]);
+    });
     const j = weighted(cand, w);
+    if (st.last != null) { lastMove = j - st.last; if (Math.abs(lastMove) > 2) leaps++; }
     let moved = false;
     if (st.p == null || j < st.p || j > st.p + 4) {
       // move the hand as little as possible: going up, the pinky reaches the new note;
