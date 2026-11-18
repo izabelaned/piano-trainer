@@ -438,8 +438,11 @@ function leapTask(ctx) {
     const j = weighted(cand, w);
     let moved = false;
     if (st.p == null || j < st.p || j > st.p + 4) {
-      // going up: thumb lands on the new note; going down: pinky lands on it
-      st.p = st.p == null || j > st.p + 4 ? Math.min(j, MAX_THUMB) : Math.max(j - 4, 0);
+      // move the hand as little as possible: going up, the pinky reaches the new note;
+      // going down, the thumb reaches it
+      if (st.p == null) st.p = Math.max(0, Math.min(j - 2, MAX_THUMB));   // start with the note under the middle finger
+      else if (j > st.p + 4) st.p = Math.min(j - 4, MAX_THUMB);
+      else st.p = Math.max(j, 0);
       moved = true;
     }
     st.last = j;
