@@ -20,6 +20,7 @@ function load() {
     d.lessonSeen = s.lessonSeen || {};
     d.mig4 = s.mig4;
     d.mig5 = s.mig5;
+    d.mig6 = s.mig6;
   }
   // Tempo levels moved to Lesson 4: old 3.5 → 4.2, old 3.6 (double notes) → 3.5, old 3.7 → 4.4
   if (!d.mig4) {
@@ -37,6 +38,14 @@ function load() {
     const to = { "3.1": "3.4", "3.2": "3.5", "3.3": "3.6", "3.4": "3.7", "3.5": "3.8" };
     Object.entries(moved).forEach(([k, v]) => { delete v.critV; ex[to[k]] = v; });
     d.mig5 = true;
+  }
+  // Fingering got its own lesson: 4.x (in time) → 5.x, then 3.5–3.8 → 4.1–4.4
+  if (!d.mig6) {
+    const ex = d.ex;
+    ["4.1", "4.2", "4.3", "4.4"].forEach(k => { if (ex[k]) { ex["5." + k[2]] = ex[k]; delete ex[k].critV; delete ex[k]; } });
+    [["3.5", "4.1"], ["3.6", "4.2"], ["3.7", "4.3"], ["3.8", "4.4"]].forEach(([a, b]) => { if (ex[a]) { ex[b] = ex[a]; delete ex[b].critV; delete ex[a]; } });
+    if (d.lessonSeen["4"]) { d.lessonSeen["5"] = true; delete d.lessonSeen["4"]; }
+    d.mig6 = true;
   }
   // Carry over stats from the first version of the note trainer.
   try {

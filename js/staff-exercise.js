@@ -73,8 +73,10 @@ export function runStaffExercise(root, level, nav) {
       round.prev = task.elems[0].item;
       task.elems.forEach(e => { e.midis = e.keys.map(midiOfKey); e.hit = new Set(); e.done = false; e.errs = 0; e.said = []; });
       idx = 0; curErrs = 0; curSaid = []; locked = false;
-      q(".ptxt").textContent = (round.i + 1) + " / " + tasksPerRound;
-      q(".bar > div").style.width = (round.i / tasksPerRound * 100) + "%";
+      if (!level.timed) {
+        q(".ptxt").textContent = (round.i + 1) + " / " + tasksPerRound;
+        q(".bar > div").style.width = (round.i / tasksPerRound * 100) + "%";
+      }
       q(".sub").innerHTML = (tempo ? `<div class="bpmtag">♩ = ${level.bpm || 60} bpm</div>` : "") + (task.sub || "");
       draw();
       if (!tempo) { colorChord(groups[0], task.elems.length > 1 ? C.cur : C.ink); fb("", "&nbsp;"); tLast = performance.now(); }
@@ -105,7 +107,8 @@ export function runStaffExercise(root, level, nav) {
         if (idx >= task.elems.length) {
           locked = true; fb("ok", "✓ " + task.elems.map(e => keyLabel(e.item)).join(" · "));
           round.i++;
-          later(() => (round.i < tasksPerRound ? nextTask() : endRound()), 800);
+          if (level.timed) later(() => (Date.now() < round.endAt ? nextTask() : endRound()), 300);
+          else later(() => (round.i < tasksPerRound ? nextTask() : endRound()), 800);
         } else { colorChord(groups[idx], C.cur); fb("ok", "✓ " + keyLabel(cur.item)); kb.scrollTo(task.elems[idx].midis[0]); }
       } else {
         curErrs++; curSaid.push(nameOf(m)); kb.flash(m, "bad");
@@ -190,7 +193,9 @@ export function runStaffExercise(root, level, nav) {
 
     function endRound() {
       cleanup.forEach(f => f()); cleanup = []; stopTimers(); beatState = null;
-      const res = finishRound(es, round.log, { focus: round.focus, criteria: nav.criteria, bpm: tempo ? level.bpm : null });
+      clearInterval(round.clock);
+      const score = level.timed ? round.log.filter(r => !r.errs).length : null;
+      const res = finishRound(es, round.log, { focus: round.focus, criteria: nav.criteria, score, bpm: tempo ? level.bpm : null });
       save();
       const extra = () => {
         if (!tempo) return [];
@@ -204,7 +209,8 @@ export function runStaffExercise(root, level, nav) {
         return out;
       };
       renderResults(root, { es, res, label: keyLabel, itemKeys: level.itemKeys(), extraInsights: extra,
-        timeLabel: tempo ? "avg off-beat" : null, onNext: startRound, onHome: nav.home, nav });
+        timeLabel: tempo ? "avg off-beat" : null, onNext: startRound, onHome: nav.home, nav,
+        nextTitle: level.timed ? "Try again" : "Another round" });
     }
 
     cleanup.push(onNote(press));
@@ -216,7 +222,22 @@ export function runStaffExercise(root, level, nav) {
       const sb = q(".startbtn"); sb.onclick = startMeasure; sb.dataset.shortcut = "primary";
     } else {
       const myRound = ++roundId;
-      startGate(root, { needStart: first }).then(() => { if (myRound === roundId && alive) nextTask(); });
+      if (level.timed) q(".ptxt").textContent = "⏱ 60s";
+      startGate(root, { needStart: first }).then(() => {
+        if (myRound !== roundId || !alive) return;
+        if (level.timed) {
+          round.endAt = Date.now() + 60000;
+          const tick = () => {
+            const left = Math.max(0, round.endAt - Date.now());
+            q(".ptxt").textContent = "⏱ " + Math.ceil(left / 1000) + "s · " + round.log.filter(r => !r.errs).length + " correct";
+            q(".bar > div").style.width = ((60000 - left) / 600) + "%";
+            if (left <= 0 && !locked) { locked = true; endRound(); }
+          };
+          round.clock = setInterval(() => { if (alive && myRound === roundId) tick(); else clearInterval(round.clock); }, 250);
+          tick();
+        }
+        nextTask();
+      });
     }
     first = false;
   }

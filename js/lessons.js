@@ -281,7 +281,7 @@ export const LESSONS = [
   {
     id: "3",
     title: "Notes on the keyboard",
-    blurb: "See a note on the staff, play it with the right hand — then two at once.",
+    blurb: "See a note on the staff, find it on the keyboard — any finger.",
     steps: [
       {
         title: "One note, one key",
@@ -302,19 +302,6 @@ export const LESSONS = [
                <li><b>B4</b> — the middle line</li><li><b>B3</b> and <b>B5</b> — just outside the staff</li></ul>`,
         visual: h => staffAndKb(h, { notes: ["B3", "C4", "G4", "B4", "B5"], mark: [59, 60, 67, 71, 83] }),
       },
-      {
-        title: "Right-hand position",
-        html: `<p>Put your <b>right thumb (1) on middle C</b>. Fingers 2, 3, 4, 5 rest on D, E, F, G. This is the <b>C position</b> — one finger per key.</p>
-               <p>Move the whole hand up so the thumb sits on G4 and you're in the <b>G position</b> (G A B C D).</p>
-               <p class="muted">In sheet music, small numbers above the notes tell you which finger to use.</p>`,
-        visual: h => staffAndKb(h, { elems: ["C4", "D4", "E4", "F4", "G4"].map((k, i) => ({ keys: [k], finger: i + 1 })), mark: [60, 62, 64, 65, 67] }),
-      },
-      {
-        title: "Two notes at once",
-        html: `<p>When two notes are stacked on <b>one stem</b>, play them <b>together</b>, at the same moment.</p>
-               <p>Use two fingers of the right hand — for example <b>C4 + E4</b> with fingers <b>1 and 3</b>, or <b>C4 + G4</b> with <b>1 and 5</b>.</p>`,
-        visual: h => staffAndKb(h, { elems: [{ keys: ["C4", "E4"] }, { keys: ["D4", "F4"] }, { keys: ["C4", "G4"] }], mark: [60, 64] }),
-      },
     ],
     levels: [
       { id: "3.1", type: "staff", title: "Line notes", desc: "E G B D F — find each one on the keyboard, any finger.", tasks: 12,
@@ -325,18 +312,54 @@ export const LESSONS = [
         make: ctx => plainTask(ctx, STAFF_KEYS), itemKeys: () => STAFF_KEYS },
       { id: "3.4", type: "staff", title: "With ledger lines", desc: "C4 to B5 — any finger.", tasks: 12,
         make: ctx => plainTask(ctx, KEYS), itemKeys: () => KEYS },
-      { id: "3.5", type: "staff", title: "With fingering", desc: "Now the finger counts: one note at a time, finger number above it.", tasks: 12,
-        make: ctx => singleTask(ctx, true), itemKeys: () => KEYS },
-      { id: "3.6", type: "staff", title: "Five-finger positions", desc: "4 notes in C or G position, fingers written above.", tasks: 6,
-        make: ctx => phraseTask(ctx, ["C4", "G4"]), itemKeys: () => KEYS },
-      { id: "3.7", type: "staff", title: "Read ahead", desc: "4 notes with steps and leaps; fingers written only where the hand moves.", tasks: 6,
-        make: ctx => leapTask(ctx), itemKeys: () => KEYS },
-      { id: "3.8", type: "staff", title: "Double notes", desc: "Two notes together, one chord at a time.", tasks: 10, pass: { maxMs: 3000 },
-        make: ctx => dyadTask(ctx, 1), itemKeys: () => DYADS },
+      { id: "3.5", type: "staff", timed: true, optional: true, pass: { minScore: 20 }, title: "60-second challenge",
+        desc: "How many notes can you find in a minute? Optional. Pass: 20.", make: ctx => plainTask(ctx, KEYS), itemKeys: () => KEYS },
     ],
   },
   {
     id: "4",
+    title: "Fingering",
+    blurb: "Finger numbers on the staff, hand positions, moving the hand, double notes.",
+    steps: [
+      {
+        title: "Finger numbers on the staff",
+        html: `<p>Sheet music often has a small <b>number above a note</b>. It tells you <b>which finger</b> to use: 1 = thumb … 5 = pinky, the same numbers you learned in Lesson 1.</p>
+               <p>From now on the finger matters, not just the key.</p>`,
+        visual: h => staffAndKb(h, { elems: [{ keys: ["E4"], finger: 3 }], mark: [64] }),
+      },
+      {
+        title: "Right-hand position",
+        html: `<p>Put your <b>right thumb (1) on middle C</b>. Fingers 2, 3, 4, 5 rest on D, E, F, G. This is the <b>C position</b> — one finger per key.</p>
+               <p>Move the whole hand up so the thumb sits on G4 and you're in the <b>G position</b> (G A B C D).</p>
+               <p class="muted">In sheet music, small numbers above the notes tell you which finger to use.</p>`,
+        visual: h => staffAndKb(h, { elems: ["C4", "D4", "E4", "F4", "G4"].map((k, i) => ({ keys: [k], finger: i + 1 })), mark: [60, 62, 64, 65, 67] }),
+      },
+      {
+        title: "Moving the hand",
+        html: `<p>When a melody leaves your five keys, the hand moves — and a <b>new finger number</b> shows where it lands. Notes without a number stay in the same position.</p>
+               <p>Move as little as possible: going <b>up</b>, the <b>pinky</b> reaches the new note; going <b>down</b>, the <b>thumb</b> does. When the hand moves, the new position lights up on the keyboard.</p>`,
+        visual: h => staffAndKb(h, { elems: [{ keys: ["C4"], finger: 1 }, { keys: ["E4"] }, { keys: ["A4"], finger: 5 }, { keys: ["G4"] }], mark: [64, 65, 67, 69, 62] }),
+      },
+      {
+        title: "Two notes at once",
+        html: `<p>When two notes are stacked on <b>one stem</b>, play them <b>together</b>, at the same moment.</p>
+               <p>Use two fingers of the right hand — for example <b>C4 + E4</b> with fingers <b>1 and 3</b>, or <b>C4 + G4</b> with <b>1 and 5</b>.</p>`,
+        visual: h => staffAndKb(h, { elems: [{ keys: ["C4", "E4"] }, { keys: ["D4", "F4"] }, { keys: ["C4", "G4"] }], mark: [60, 64] }),
+      },
+    ],
+    levels: [
+      { id: "4.1", type: "staff", title: "With fingering", desc: "One note at a time, the finger number written above it.", tasks: 12,
+        make: ctx => singleTask(ctx, true), itemKeys: () => KEYS },
+      { id: "4.2", type: "staff", title: "Five-finger positions", desc: "4 notes in C or G position, fingers written above.", tasks: 6,
+        make: ctx => phraseTask(ctx, ["C4", "G4"]), itemKeys: () => KEYS },
+      { id: "4.3", type: "staff", title: "Read ahead", desc: "4 notes with steps and leaps; fingers written only where the hand moves.", tasks: 6,
+        make: ctx => leapTask(ctx), itemKeys: () => KEYS },
+      { id: "4.4", type: "staff", title: "Double notes", desc: "Two notes together, one chord at a time.", tasks: 10, pass: { maxMs: 3000 },
+        make: ctx => dyadTask(ctx, 1), itemKeys: () => DYADS },
+    ],
+  },
+  {
+    id: "5",
     title: "Playing in time",
     blurb: "The beat, bars in 4/4, and playing with a metronome — slow first, then a bit faster.",
     steps: [
@@ -371,13 +394,13 @@ export const LESSONS = [
       },
     ],
     levels: [
-      { id: "4.1", type: "staff", tempo: true, bpm: 50, title: "Keep the beat", desc: "One note per bar, played 4 times on the clicks. 50 bpm.", tasks: 7,
+      { id: "5.1", type: "staff", tempo: true, bpm: 50, title: "Keep the beat", desc: "One note per bar, played 4 times on the clicks. 50 bpm.", tasks: 7,
         make: ctx => repeatTask(ctx), itemKeys: () => KEYS },
-      { id: "4.2", type: "staff", tempo: true, bpm: 50, title: "Steps in time", desc: "4 notes in a five-finger position. 50 bpm.", tasks: 7,
+      { id: "5.2", type: "staff", tempo: true, bpm: 50, title: "Steps in time", desc: "4 notes in a five-finger position. 50 bpm.", tasks: 7,
         make: ctx => phraseTask(ctx, ["C4", "D4", "E4", "F4", "G4", "A4"]), itemKeys: () => KEYS },
-      { id: "4.3", type: "staff", tempo: true, bpm: 66, title: "A bit faster", desc: "Same as 4.2 at 66 bpm.", tasks: 7,
+      { id: "5.3", type: "staff", tempo: true, bpm: 66, title: "A bit faster", desc: "Same as 5.2 at 66 bpm.", tasks: 7,
         make: ctx => phraseTask(ctx, ["C4", "D4", "E4", "F4", "G4", "A4"]), itemKeys: () => KEYS },
-      { id: "4.4", type: "staff", tempo: true, bpm: 50, title: "Double notes in time", desc: "4 double notes per bar. 50 bpm.", tasks: 7, pass: { maxMs: 200 },
+      { id: "5.4", type: "staff", tempo: true, bpm: 50, title: "Double notes in time", desc: "4 double notes per bar. 50 bpm.", tasks: 7, pass: { maxMs: 200 },
         make: ctx => dyadTask(ctx, 4), itemKeys: () => DYADS },
     ],
   },
