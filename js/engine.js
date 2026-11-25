@@ -64,6 +64,7 @@ export function checkRound(sum, crit) {
         checks.push({ name: "Avg time", ok: shown != null && shown <= goal, val: shown != null ? shown + "s" : "–", goal: "≤ " + goal + "s" });
       }
     }
+    (sum.extra || []).forEach(c => checks.push(c));
     if (crit.minBpm) checks.push({ name: "Tempo", ok: (sum.bpm || 0) >= crit.minBpm, val: (sum.bpm || "?") + " bpm", goal: "≥ " + crit.minBpm });
   }
   return { pass: checks.every(c => c.ok), checks };
@@ -75,7 +76,7 @@ export function recount(es, crit) {
   es.passed = es.passCount >= PASS_ROUNDS;
 }
 
-export function finishRound(es, log, { criteria, focus = [], score = null, bpm = null } = {}) {
+export function finishRound(es, log, { criteria, focus = [], score = null, bpm = null, extra = null } = {}) {
   const per = aggregate(log);
   const prevRound = es.rounds[es.rounds.length - 1] || null;
   const prevItems = JSON.parse(JSON.stringify(es.items));
@@ -92,6 +93,7 @@ export function finishRound(es, log, { criteria, focus = [], score = null, bpm =
   });
 
   const summary = { date: Date.now(), n: log.length, correct: clean, avgMs, focus, score, bpm };
+  if (extra) summary.extra = extra;
   const verdict = checkRound(summary, criteria);
   summary.pass = verdict.pass;
   summary.checks = verdict.checks;

@@ -7,6 +7,7 @@ import { schedule, audio, stopClicks, playMelody } from "./metronome.js";
 import { store, save } from "./store.js";
 import { pick, difficulty } from "./engine.js";
 import { handsSvg, handWords } from "./hands.js";
+import { buildRun, drawRun } from "./scale-exercise.js";
 
 // Tempo words for Lesson 5 (defined first: the lesson text uses them)
 const TEMPI = [
@@ -577,6 +578,60 @@ export const LESSONS = [
         make: ctx => dyadTask(ctx, 1), itemKeys: () => LDYADS },
     ],
   },
+  {
+    id: "9",
+    title: "Scales and dynamics",
+    blurb: "The C major scale with each hand, hands together, contrary motion — then playing evenly, louder and softer.",
+    steps: [
+      {
+        title: "The C major scale",
+        html: `<p>A <b>scale</b> walks up the keys one step at a time. <b>C major</b> uses only white keys: <b>C D E F G A B C</b> — one octave, from C to the next C.</p>
+               <p>You only have 5 fingers for 8 notes, so the hand has to <b>pass the thumb under</b> or <b>cross a finger over</b> on the way. That's what this lesson is about.</p>`,
+        visual: h => staffAndKb(h, { notes: ["C4", "D4", "E4", "F4", "G4", "A4", "B4", "C5"], mark: [60, 62, 64, 65, 67, 69, 71, 72] }),
+      },
+      {
+        title: "Right hand: thumb under",
+        html: `<p><b>Up</b> from C4: <b>1 2 3</b> on C D E, then the <b>thumb passes under</b> the 3rd finger onto <b>F</b>, and <b>1 2 3 4 5</b> on F G A B C.</p>
+               <p><b>Down</b> from C5: <b>5 4 3 2 1</b> on C B A G F, then the <b>3rd finger crosses over</b> the thumb onto <b>E</b>, and <b>3 2 1</b> on E D C.</p>`,
+        visual: h => runVisual(h, "rh"),
+      },
+      {
+        title: "Left hand: crossing over",
+        html: `<p><b>Up</b> from C3: <b>5 4 3 2 1</b> on C D E F G, then the <b>3rd finger crosses over</b> the thumb onto <b>A3</b>, and <b>3 2 1</b> on A B C.</p>
+               <p><b>Down</b> from C4: <b>1 2 3</b> on C B A, then the <b>thumb passes under</b> onto <b>G3</b>, and <b>1 2 3 4 5</b> on G F E D C.</p>`,
+        visual: h => runVisual(h, "lh"),
+      },
+      {
+        title: "Hands together, and contrary motion",
+        html: `<p><b>Hands together:</b> left hand from C3, right hand from C4, both going up, then down. Tricky: the hands change position at <b>different moments</b> (right hand on F, left hand on A).</p>
+               <p><b>Contrary motion:</b> both thumbs start on <b>middle C</b> (it's one key — play it once), then the hands move <b>apart</b> to C5 and C3 and come back. The fingering is a mirror, so both hands cross at the same time — it often feels easier.</p>`,
+        visual: h => runVisual(h, "contrary"),
+      },
+      {
+        title: "Loud and soft",
+        html: `<p>How loud you play is called <b>dynamics</b>. The words are Italian again: <b><i>p</i></b> (piano) = soft, <b><i>mf</i></b> (mezzo-forte) = medium, <b><i>f</i></b> (forte) = loud.</p>
+               <p><b>Crescendo</b> ( &lt; ) means getting louder, <b>diminuendo</b> ( &gt; ) getting softer.</p>
+               <p>A digital piano measures <b>how fast you press a key</b> (0–127). This only works with a MIDI piano whose <b>Touch Response</b> setting is not Off. <b>Try it:</b> play a few notes softly, then firmly, and watch the bar.</p>`,
+        visual: h => velocityVisual(h),
+      },
+    ],
+    levels: [
+      { id: "9.1", type: "scale", run: "rh", title: "Right hand", desc: "C4 up to C5 and back — thumb under on F, 3 over on E.", pass: { maxMs: 2000 },
+        hint: "Right hand · fingers written above the notes" },
+      { id: "9.2", type: "scale", run: "lh", title: "Left hand", desc: "C3 up to C4 and back — 3 over on A, thumb under on G.", pass: { maxMs: 2000 },
+        hint: "Left hand · fingers written above the notes" },
+      { id: "9.3", type: "scale", run: "both", title: "Hands together", desc: "Left hand from C3, right hand from C4, up and down together.", pass: { maxMs: 2000 },
+        hint: "Both hands, each pair of notes together" },
+      { id: "9.4", type: "scale", run: "contrary", title: "Contrary motion", desc: "Both thumbs on middle C, hands move apart and back.", pass: { maxMs: 2000 },
+        hint: "Start with both thumbs on middle C (one key), then move apart" },
+      { id: "9.5", type: "scale", run: "contrary", dyn: "even", title: "Even touch", desc: "Contrary motion, every note the same loudness. MIDI piano only.", pass: { maxMs: 2000 },
+        hint: "<b><i>mf</i></b> all the way — every note equally loud" },
+      { id: "9.6", type: "scale", run: "contrary", dyn: "cresc", title: "Soft – loud – soft", desc: "Crescendo on the way out, diminuendo on the way back. MIDI piano only.", pass: { maxMs: 2000 },
+        hint: "<b><i>p</i></b> &lt; <b><i>f</i></b> &gt; <b><i>p</i></b> — grow louder going out, softer coming back" },
+      { id: "9.7", type: "scale", run: "contrary", dyn: "dim", title: "Loud – soft – loud", desc: "Diminuendo on the way out, crescendo on the way back. MIDI piano only.", pass: { maxMs: 2000 },
+        hint: "<b><i>f</i></b> &gt; <b><i>p</i></b> &lt; <b><i>f</i></b> — softer going out, louder coming back" },
+    ],
+  },
 ];
 
 // ---------- Lesson 5 helpers ----------
@@ -796,6 +851,30 @@ function beatDemo(h, root, { bpm, timeSig }) {
     raf = requestAnimationFrame(tick);
   };
   return { cleanup: () => { cancelAnimationFrame(raf); stopClicks(); cleanup(); } };
+}
+
+// Lesson 9 visuals: the whole scale run with fingering, and a live loudness meter.
+function runVisual(h, run) {
+  const card = document.createElement("div");
+  card.className = "card staff scale";
+  h.appendChild(card);
+  drawRun(card, buildRun(run), { grand: run !== "rh" });
+  const v = kbVisual(h, { lo: run === "rh" ? 57 : 46, hi: run === "lh" ? 62 : 74, labels: "c" });
+  return { cleanup: () => v.cleanup() };
+}
+
+function velocityVisual(h) {
+  const box = document.createElement("div");
+  box.className = "card velbox big";
+  box.innerHTML = `<div class="muted">Loudness of the last note</div><div class="velmeter"><div></div></div><div class="velnum">–</div>`;
+  h.appendChild(box);
+  const v = kbVisual(h, { lo: 48, hi: 72, labels: "c" });
+  const off = onNote((m, src, vel) => {
+    if (vel == null) { box.querySelector(".velnum").textContent = "tapped on screen — no loudness"; return; }
+    box.querySelector(".velmeter > div").style.width = (vel / 127 * 100) + "%";
+    box.querySelector(".velnum").textContent = `${vel} / 127 · ${vel < 50 ? "p (soft)" : vel < 85 ? "mf (medium)" : "f (loud)"}`;
+  });
+  return { cleanup: () => { off(); v.cleanup(); } };
 }
 
 function range(a, b) { const r = []; for (let i = a; i <= b; i++) r.push(i); return r; }

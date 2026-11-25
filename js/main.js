@@ -3,6 +3,7 @@ import { LESSONS } from "./lessons.js";
 import { runKeysExercise } from "./keys-exercise.js";
 import { runNotesExercise } from "./notes-exercise.js";
 import { runStaffExercise } from "./staff-exercise.js";
+import { runScaleExercise } from "./scale-exercise.js";
 import { connectMidi, onMidiStatus, midiStatusText, midi, comboName } from "./input.js";
 import { recount, PASS_ROUNDS } from "./engine.js";
 import { SIZES } from "./music.js";
@@ -162,7 +163,8 @@ function exercise(L, lv) {
   const v = shell(`${lv.id} · ${lv.title}`, () => home());
   v.classList.add("ex", lv.type === "notes" ? "with-names" : "with-kb");
   const nav = { home, criteria: criteriaFor(lv), next: nextOf(L, lv) };
-  const stop = lv.type === "notes" ? runNotesExercise(v, lv, nav) : lv.type === "staff" ? runStaffExercise(v, lv, nav) : runKeysExercise(v, lv, nav);
+  const stop = lv.type === "notes" ? runNotesExercise(v, lv, nav) : lv.type === "staff" ? runStaffExercise(v, lv, nav)
+    : lv.type === "scale" ? runScaleExercise(v, lv, nav) : runKeysExercise(v, lv, nav);
   if (lv.type !== "notes") addRotateHint(v);
   cleanup = () => { stop && stop(); };
 }

@@ -300,3 +300,13 @@ body.midi-on .level.rec .sc { display:block !important; margin:4px 0 0; color:va
 .tempo button { align-self:flex-start; margin-top:4px; }
 .tempo.on { border-color:var(--accent); background:#eef3f8; }
 .bpmtag b { font-style:italic; font-family:Georgia, serif; font-size:1.05rem; }
+
+/* scales + dynamics */
+.card.staff.scale svg { width:100%; height:auto; }
+.stage .card.staff.scale svg { height:100%; }
+.velbox { display:flex; flex-direction:column; gap:6px; }
+.velbox.big { padding:14px; }
+.velmeter { height:14px; border-radius:7px; background:var(--line); overflow:hidden; }
+.velmeter > div { height:100%; width:0; background:linear-gradient(90deg, #9cc9ad, #e9a23b, #c0392b); transition:width .12s; }
+.velnum { font-weight:700; font-size:1.1rem; }
+.velchart { width:100%; max-width:360px; display:block; margin-top:6px; }

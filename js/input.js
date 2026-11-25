@@ -10,7 +10,7 @@ export const midi = { status: "off", devices: "" };
 // status: off | unsupported | blocked | nodevice | connected
 
 export function onNote(cb) { noteListeners.add(cb); return () => noteListeners.delete(cb); }
-export function emitNote(m, source) { noteListeners.forEach(cb => cb(m, source)); }
+export function emitNote(m, source, vel = null) { noteListeners.forEach(cb => cb(m, source, vel)); }
 
 export function onMidiStatus(cb) { statusListeners.add(cb); return () => statusListeners.delete(cb); }
 function setStatus(status, devices = "") {
@@ -20,7 +20,7 @@ function setStatus(status, devices = "") {
 
 function onMessage(e) {
   const [st, note, vel] = e.data;
-  if ((st & 0xf0) === 0x90 && vel > 0) midiNote(note);
+  if ((st & 0xf0) === 0x90 && vel > 0) midiNote(note, vel);
 }
 
 // ---------- piano shortcuts ----------
@@ -46,12 +46,12 @@ export const comboName = action => comboKeys()[action].map(nameOf).join(" ");
 
 const COMBO_WINDOW = 350;
 let buf = [], flushTimer = null;
-function midiNote(m) {
+function midiNote(m, vel) {
   const combos = comboKeys();
-  if (!Object.values(combos).flat().includes(m)) { emitNote(m, "midi"); return; }
+  if (!Object.values(combos).flat().includes(m)) { emitNote(m, "midi", vel); return; }
   const now = performance.now();
   buf = buf.filter(b => now - b.t < COMBO_WINDOW);
-  buf.push({ m, t: now });
+  buf.push({ m, t: now, vel });
   const held = new Set(buf.map(b => b.m));
   for (const [action, keys] of Object.entries(combos)) {
     if (keys.every(k => held.has(k))) {
@@ -61,7 +61,7 @@ function midiNote(m) {
     }
   }
   clearTimeout(flushTimer);
-  flushTimer = setTimeout(() => { const b = buf; buf = []; b.forEach(x => emitNote(x.m, "midi")); }, COMBO_WINDOW);
+  flushTimer = setTimeout(() => { const b = buf; buf = []; b.forEach(x => emitNote(x.m, "midi", x.vel)); }, COMBO_WINDOW);
 }
 
 export function fireShortcut(action) {
