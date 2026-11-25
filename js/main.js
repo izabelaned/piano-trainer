@@ -24,7 +24,12 @@ function criteriaFor(lv) {
   return Object.assign(base, lv.pass || {});
 }
 
+// Every level can be opened from the home screen; passing still gets tracked (✓, x/3)
+// and the recommended next level is still highlighted. Set to false to lock levels again.
+const OPEN_ALL = true;
+
 function isUnlocked(lv) {
+  if (OPEN_ALL) return true;
   const i = ALL.findIndex(x => x.lv === lv);
   if (i === 0) return true;
   const es = store.ex[lv.id];
