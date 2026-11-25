@@ -1,14 +1,13 @@
 // Lesson 3: see notes on the staff, play them on the keyboard.
 // Modes: untimed (single notes, sequences, double notes) and tempo (4/4 with metronome).
 import { store, save, exState } from "./store.js";
-import { SIZES, nameOf, midiOf, TREBLE_BY_KEY } from "./music.js";
+import { SIZES, nameOf, midiOf, byClef } from "./music.js";
 import { Keyboard } from "./keyboard.js";
 import { onNote, onMidiStatus, midiStatusText } from "./input.js";
 import { svgEl, drawMeasure, colorChord } from "./staff.js";
 import { finishRound, topHard } from "./engine.js";
 import { renderResults } from "./results.js";
 import { schedule, audio, stopClicks } from "./metronome.js";
-import { positionKeys } from "./lessons.js";
 import { startGate } from "./countdown.js";
 
 const LABEL_CYCLE = ["none", "c", "all"];
@@ -18,6 +17,7 @@ const midiOfKey = k => midiOf(k[0], +k.slice(1));
 export const keyLabel = k => k.split("+").join(" + ");
 
 export function runStaffExercise(root, level, nav) {
+  const MAP = byClef(level.clef);
   const es = exState(level.id);
   const [slo, shi] = SIZES[store.settings.size];
   const lo = slo, hi = shi;    // the whole keyboard, like the real one
@@ -64,12 +64,12 @@ export function runStaffExercise(root, level, nav) {
     function draw() {
       const svg = svgEl("0 22 300 148");
       const card = q(".card.staff"); card.innerHTML = ""; card.appendChild(svg);
-      groups = drawMeasure(svg, task.elems.map(e => ({ steps: e.keys.map(k => TREBLE_BY_KEY[k].step), finger: e.finger })), { timeSig: tempo });
+      groups = drawMeasure(svg, task.elems.map(e => ({ steps: e.keys.map(k => MAP[k].step), finger: e.finger })), { timeSig: tempo, clef: level.clef || true });
     }
 
     function nextTask() {
       kb.clearAll();
-      task = level.make({ es, prev: round.prev, state: round.gen || (round.gen = {}) });
+      task = level.make({ es, prev: round.prev, state: round.gen || (round.gen = {}), hand: level.hand });
       round.prev = task.elems[0].item;
       task.elems.forEach(e => { e.midis = e.keys.map(midiOfKey); e.hit = new Set(); e.done = false; e.errs = 0; e.said = []; });
       idx = 0; curErrs = 0; curSaid = []; locked = false;
@@ -85,7 +85,7 @@ export function runStaffExercise(root, level, nav) {
       // New hand position: show the 5 keys with finger numbers until you start playing.
       if (task.pos && (task.pos.moved || tempo)) {   // in time: show it every bar, there's no time to think
         const map = {};
-        positionKeys(task.pos.thumb).forEach((k, i) => { map[midiOfKey(k)] = i + 1; });
+        Object.entries(task.pos.fingers || {}).forEach(([k, f]) => { map[midiOfKey(k)] = f; });
         kb.showFingers(map);
       } else kb.showFingers({});
     }

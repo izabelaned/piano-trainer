@@ -500,6 +500,83 @@ export const LESSONS = [
       { id: "6.5", type: "notes", clef: "bass", optional: true, title: "60-second challenge", desc: "How many can you name in a minute? Optional. Pass: 25.", keys: BASS.map(n => n.key), timed: true },
     ],
   },
+  {
+    id: "7",
+    title: "Left hand on the keyboard",
+    blurb: "See a note in the bass clef, find it with the left hand — any finger.",
+    steps: [
+      {
+        title: "One note, one key — left hand",
+        html: `<p>The bass clef works just like the treble clef: every note is <b>exactly one key</b>, now in the lower half of the keyboard.</p>
+               <p><b>Try it:</b> play any white key from D2 to D4 and watch where it appears on the bass staff.</p>`,
+        visual: h => staffAndKb(h, { notes: ["C3"], interactive: true, mark: [48], clef: "bass" }),
+      },
+      {
+        title: "Higher on the staff = further right",
+        html: `<p><b>C3</b> and <b>C4</b> are both C, one octave apart. Higher on the staff is further <b>up</b> (right) on the keyboard — same as in the treble clef.</p>`,
+        visual: h => staffAndKb(h, { notes: ["C3", "C4"], mark: [48, 60], clef: "bass" }),
+      },
+      {
+        title: "Your left-hand landmarks",
+        html: `<ul class="ins"><li><b>G2</b> — the bottom line</li><li><b>C3</b> — the second space</li>
+               <li><b>F3</b> — line 4, between the clef's dots</li><li><b>C4</b> — middle C, the ledger line above</li></ul>
+               <p class="muted">The left hand plays from middle C down.</p>`,
+        visual: h => staffAndKb(h, { notes: ["G2", "C3", "F3", "C4"], mark: [43, 48, 53, 60], clef: "bass" }),
+      },
+    ],
+    levels: [
+      { id: "7.1", type: "staff", clef: "bass", hand: "L", title: "Line notes", desc: "G B D F A — find each one, any left-hand finger.", tasks: 12,
+        make: ctx => plainTask(ctx, L_LINE_KEYS), itemKeys: () => L_LINE_KEYS },
+      { id: "7.2", type: "staff", clef: "bass", hand: "L", title: "Space notes", desc: "A C E G — any finger.", tasks: 12,
+        make: ctx => plainTask(ctx, L_SPACE_KEYS), itemKeys: () => L_SPACE_KEYS },
+      { id: "7.3", type: "staff", clef: "bass", hand: "L", title: "The whole staff", desc: "G2 to A3 — any finger.", tasks: 12,
+        make: ctx => plainTask(ctx, L_STAFF_KEYS), itemKeys: () => L_STAFF_KEYS },
+      { id: "7.4", type: "staff", clef: "bass", hand: "L", title: "With ledger lines", desc: "D2 to middle C — any finger.", tasks: 12,
+        make: ctx => plainTask(ctx, LKEYS), itemKeys: () => LKEYS },
+      { id: "7.5", type: "staff", clef: "bass", hand: "L", timed: true, optional: true, pass: { minScore: 20 }, title: "60-second challenge",
+        desc: "How many notes can you find in a minute? Optional. Pass: 20.", make: ctx => plainTask(ctx, LKEYS), itemKeys: () => LKEYS },
+    ],
+  },
+  {
+    id: "8",
+    title: "Left-hand fingering",
+    blurb: "Finger numbers for the left hand, hand positions, moving the hand, double notes.",
+    steps: [
+      {
+        title: "Left-hand finger numbers",
+        html: `<p>The left hand uses the same numbers — <b>1 = thumb … 5 = pinky</b> — but it's mirrored on the keyboard: the <b>pinky (5) plays the lowest note</b> and the <b>thumb (1) the highest</b>.</p>
+               <p>So going up a five-finger position, the left hand counts <b>5 4 3 2 1</b>.</p>`,
+        visual: h => staffAndKb(h, { elems: ["C3", "D3", "E3", "F3", "G3"].map((k, i) => ({ keys: [k], finger: 5 - i })), mark: [48, 50, 52, 53, 55], clef: "bass" }),
+      },
+      {
+        title: "Left-hand position",
+        html: `<p><b>C position:</b> pinky on <b>C3</b>, then 4 3 2 1 on D E F G — the thumb ends on <b>G3</b>.</p>
+               <p><b>G position:</b> pinky on <b>G2</b>, thumb on <b>D3</b>.</p>`,
+        visual: h => staffAndKb(h, { elems: ["G2", "A2", "B2", "C3", "D3"].map((k, i) => ({ keys: [k], finger: 5 - i })), mark: [43, 45, 47, 48, 50], clef: "bass" }),
+      },
+      {
+        title: "Moving the hand",
+        html: `<p>When the melody leaves your five keys, the hand moves and a new finger number shows where it lands. Notes without a number stay in the same position.</p>
+               <p>For the left hand it's mirrored: going <b>up</b>, the <b>thumb</b> reaches the new note; going <b>down</b>, the <b>pinky</b> does.</p>`,
+        visual: h => staffAndKb(h, { elems: [{ keys: ["C3"], finger: 5 }, { keys: ["E3"] }, { keys: ["A3"], finger: 1 }, { keys: ["G3"] }], mark: [50, 52, 53, 55, 57], clef: "bass" }),
+      },
+      {
+        title: "Two notes at once",
+        html: `<p>Same as with the right hand: two notes on one stem are played <b>together</b> — for example <b>C3 + E3</b> with fingers <b>5 and 3</b>.</p>`,
+        visual: h => staffAndKb(h, { elems: [{ keys: ["C3", "E3"], finger: [5, 3] }, { keys: ["D3", "F3"], finger: [4, 2] }, { keys: ["E3", "G3"], finger: [3, 1] }], mark: [48, 52], clef: "bass" }),
+      },
+    ],
+    levels: [
+      { id: "8.1", type: "staff", clef: "bass", hand: "L", title: "With fingering", desc: "One note at a time, the finger number written above it.", tasks: 12,
+        make: ctx => singleTask(ctx, true), itemKeys: () => LKEYS },
+      { id: "8.2", type: "staff", clef: "bass", hand: "L", title: "Five-finger positions", desc: "4 notes in C or G position, fingers written above.", tasks: 6,
+        make: ctx => phraseTask(ctx, ["C3", "G2"]), itemKeys: () => LKEYS },
+      { id: "8.3", type: "staff", clef: "bass", hand: "L", title: "Read ahead", desc: "4 notes with steps and leaps; fingers written only where the hand moves.", tasks: 6,
+        make: ctx => leapTask(ctx), itemKeys: () => LKEYS },
+      { id: "8.4", type: "staff", clef: "bass", hand: "L", title: "Double notes", desc: "Two notes together, one chord at a time.", tasks: 10, pass: { maxMs: 3000 },
+        make: ctx => dyadTask(ctx, 1), itemKeys: () => LDYADS },
+    ],
+  },
 ];
 
 // ---------- Lesson 5 helpers ----------
@@ -533,7 +610,7 @@ function patternTask(ctx) {
   const idx = up ? [0, 1, 2, 3] : [4, 3, 2, 1];
   const moved = up && st.lastP !== st.p; st.lastP = st.p;
   return {
-    pos: { thumb: st.p, moved },
+    pos: { thumb: st.p, moved, fingers: fingerMap(RP, st.p) },
     elems: idx.map(i => ({ keys: [KEYS[st.p + i]], item: KEYS[st.p + i], finger: i + 1 })),
     sub: `Thumb on <b>${KEYS[st.p]}</b> · ${up ? "up: 1 2 3 4" : "down: 5 4 3 2"}`,
   };
@@ -544,16 +621,23 @@ function patternTask(ctx) {
 const KEYS = TREBLE.filter(n => n.key !== "B3").map(n => n.key);   // C4 … B5
 const DYADS = [];
 KEYS.forEach((k, i) => [2, 3, 4].forEach(d => { if (KEYS[i + d]) DYADS.push(k + "+" + KEYS[i + d]); }));
-const MAX_THUMB = KEYS.length - 5;
 const LINE_KEYS = ["E4", "G4", "B4", "D5", "F5"];
 const SPACE_KEYS = ["F4", "A4", "C5", "E5"];
 const STAFF_KEYS = ["E4", "F4", "G4", "A4", "B4", "C5", "D5", "E5", "F5"];
+
+// Left hand: bass clef up to middle C (D4 belongs to the right hand).
+const LKEYS = BASS.filter(n => n.key !== "D4").map(n => n.key);    // D2 … C4
+const LDYADS = [];
+LKEYS.forEach((k, i) => [2, 3, 4].forEach(d => { if (LKEYS[i + d]) LDYADS.push(k + "+" + LKEYS[i + d]); }));
+const L_LINE_KEYS = ["G2", "B2", "D3", "F3", "A3"];
+const L_SPACE_KEYS = ["A2", "C3", "E3", "G3"];
+const L_STAFF_KEYS = ["G2", "A2", "B2", "C3", "D3", "E3", "F3", "G3", "A3"];
 
 // 3.1–3.4: just find the note on the keyboard — no hand position, no fingering.
 function plainTask(ctx, keys) {
   const k = pick(ctx.es, keys, ctx.prev);
   return { elems: [{ keys: [k], item: k }], sub: "Find it on the keyboard — any finger." };
-}                                    // thumb can go up to F5
+}
 
 // How likely each melodic interval is (in steps). Mostly steps and small skips, like real tunes.
 const STEP_W = { 0: 0.15, 1: 3, 2: 2.2, 3: 1.2, 4: 0.8 };
@@ -566,10 +650,21 @@ function weighted(items, weights) {
   return items[items.length - 1];
 }
 
-// Pick a hand position (thumb index), leaning toward positions that hold your hard notes.
+// ---------- hand profiles ----------
+// A five-finger position is described by p = index of its LOWEST key in P.keys.
+// Right hand: thumb is the lowest finger (1 … 5 going up). Left hand: pinky is the lowest (5 … 1 going up).
+const RP = { hand: "R", keys: KEYS, f: (j, p) => j - p + 1, thumb: p => KEYS[p] };
+const LP = { hand: "L", keys: LKEYS, f: (j, p) => 5 - (j - p), thumb: p => LKEYS[p + 4] };
+const prof = ctx => (ctx.hand === "L" ? LP : RP);
+const maxP = P => P.keys.length - 5;
+const fingerMap = (P, p) => Object.fromEntries([0, 1, 2, 3, 4].map(i => [P.keys[p + i], P.f(p + i, p)]));
+const where = (P, p) => `Hand position: thumb on <b>${P.thumb(p)}</b>`;
+
+// Pick a hand position, leaning toward positions that hold your hard notes.
 function choosePos(ctx, options, near) {
+  const P = prof(ctx);
   const w = options.map(p => {
-    let d = 0; for (let j = p; j < p + 5; j++) d += diff(ctx, KEYS[j]);
+    let d = 0; for (let j = p; j < p + 5; j++) d += diff(ctx, P.keys[j]);
     const move = near == null ? 1 : [1, 1.4, 1.1, 0.7, 0.4][Math.min(4, Math.abs(p - near))];
     return d * move;
   });
@@ -578,102 +673,102 @@ function choosePos(ctx, options, near) {
 
 // Next note inside the current position: mostly steps/skips, hard notes a bit more often.
 function nextInPos(ctx, p, last) {
+  const P = prof(ctx);
   const cand = [0, 1, 2, 3, 4].map(f => p + f);
-  const w = cand.map(j => (last == null ? 1 : STEP_W[Math.min(4, Math.abs(j - last))]) * diff(ctx, KEYS[j]));
+  const w = cand.map(j => (last == null ? 1 : STEP_W[Math.min(4, Math.abs(j - last))]) * diff(ctx, P.keys[j]));
   return weighted(cand, w);
 }
 
-// 3.1 / 3.2: one note per task, but consecutive tasks form a flowing line in one hand position.
+// With fingering: one note per task, consecutive tasks form a flowing line in one hand position.
 // The hand moves now and then — the task says so.
 function singleTask(ctx, fingering) {
-  const st = ctx.state;
+  const P = prof(ctx), st = ctx.state;
   let moved = false;
-  if (st.p == null) { st.p = choosePos(ctx, range(0, MAX_THUMB)); moved = true; st.n = 0; }
+  if (st.p == null) { st.p = choosePos(ctx, range(0, maxP(P))); moved = true; st.n = 0; }
   else if (st.n >= 4 && Math.random() < 0.3) {
-    st.p = choosePos(ctx, range(0, MAX_THUMB).filter(p => p !== st.p), st.p); moved = true; st.n = 0; st.last = null;
+    st.p = choosePos(ctx, range(0, maxP(P)).filter(p => p !== st.p), st.p); moved = true; st.n = 0; st.last = null;
   }
   const j = nextInPos(ctx, st.p, st.last);
   st.last = j; st.n++;
-  const k = KEYS[j], f = j - st.p + 1;
-  const where = `Hand position: thumb on <b>${KEYS[st.p]}</b>`;
+  const k = P.keys[j], f = P.f(j, st.p);
   return {
-    pos: { thumb: st.p, moved },
+    pos: { thumb: st.p, moved, fingers: fingerMap(P, st.p) },
     elems: [{ keys: [k], item: k, finger: fingering ? f : null }],
-    sub: (moved ? `<span class="handline">↔ ${where}</span>` : `<span class="muted">${where}</span>`) +
-         (fingering ? ` · <b>${handWords("R", f)}</b>` : ""),
+    sub: (moved ? `<span class="handline">↔ ${where(P, st.p)}</span>` : `<span class="muted">${where(P, st.p)}</span>`) +
+         (fingering ? ` · <b>${handWords(P.hand, f)}</b>` : ""),
   };
 }
 
-// 3.3 / 3.5: a 4-note phrase in one five-finger position.
+// Five-finger positions: a 4-note phrase in one position. starts = lowest key of each allowed position.
 function phraseTask(ctx, starts) {
-  const options = starts.map(k => KEYS.indexOf(k));
+  const P = prof(ctx);
+  const options = starts.map(k => P.keys.indexOf(k));
   const p = choosePos(ctx, options);
   const moved = ctx.state.p !== p; ctx.state.p = p;
   const elems = []; let last = null;
   for (let i = 0; i < 4; i++) {
     const j = nextInPos(ctx, p, last); last = j;
-    elems.push({ keys: [KEYS[j]], item: KEYS[j], finger: j - p + 1 });
+    elems.push({ keys: [P.keys[j]], item: P.keys[j], finger: P.f(j, p) });
   }
-  return { pos: { thumb: p, moved }, elems, sub: `Thumb on <b>${KEYS[p]}</b> · fingers 1–5 on ${KEYS.slice(p, p + 5).join(" ")}` };
+  return { pos: { thumb: p, moved, fingers: fingerMap(P, p) }, elems,
+    sub: `Thumb on <b>${P.thumb(p)}</b> · five fingers on ${P.keys.slice(p, p + 5).join(" ")}` };
 }
 
-// 3.4: steps and leaps across the whole range, continuing from the previous phrase.
+// Read ahead: steps and leaps across the whole range, continuing from the previous phrase.
 // Like real sheet music, a finger number is written only where the hand has to move
 // (and on the first note); in between you stay in the same five-finger position.
 function leapTask(ctx) {
-  const st = ctx.state;
+  const P = prof(ctx), st = ctx.state;
   const elems = [];
   let leaps = 0, lastMove = 0;      // lastMove: signed interval of the previous note
   for (let i = 0; i < 4; i++) {
-    const cand = range(0, KEYS.length - 1);
+    const cand = range(0, P.keys.length - 1);
     const w = cand.map(j => {
-      if (st.last == null) return diff(ctx, KEYS[j]);
+      if (st.last == null) return diff(ctx, P.keys[j]);
       const d = j - st.last, a = Math.abs(d);
       let wt = LEAP_W[a] || 0.1;
       if (a > 2 && leaps >= 1) wt = 0;                        // at most one leap per phrase
       if (Math.abs(lastMove) > 2) {                           // after a leap: a step or small skip…
         wt = a <= 2 && a > 0 ? wt * (Math.sign(d) !== Math.sign(lastMove) ? 3 : 1) : 0;   // …preferably back
       }
-      return wt * diff(ctx, KEYS[j]);
+      return wt * diff(ctx, P.keys[j]);
     });
     const j = weighted(cand, w);
     if (st.last != null) { lastMove = j - st.last; if (Math.abs(lastMove) > 2) leaps++; }
     let moved = false;
     if (st.p == null || j < st.p || j > st.p + 4) {
-      // move the hand as little as possible: going up, the pinky reaches the new note;
-      // going down, the thumb reaches it
-      if (st.p == null) st.p = Math.max(0, Math.min(j - 2, MAX_THUMB));   // start with the note under the middle finger
-      else if (j > st.p + 4) st.p = Math.min(j - 4, MAX_THUMB);
+      // move the hand as little as possible: the top finger reaches a higher note,
+      // the bottom finger reaches a lower one (right hand: pinky / thumb, left hand: thumb / pinky)
+      if (st.p == null) st.p = Math.max(0, Math.min(j - 2, maxP(P)));   // start with the note under the middle finger
+      else if (j > st.p + 4) st.p = Math.min(j - 4, maxP(P));
       else st.p = Math.max(j, 0);
       moved = true;
     }
     st.last = j;
-    const f = j - st.p + 1;
-    elems.push({ keys: [KEYS[j]], item: KEYS[j], finger: moved || i === 0 ? f : null });
+    elems.push({ keys: [P.keys[j]], item: P.keys[j], finger: moved || i === 0 ? P.f(j, st.p) : null });
   }
   return { elems, sub: "A finger number appears only where your hand moves — stay in that position until the next number." };
 }
 
-// 3.6 / 3.7: double notes that fit one hand position, with fingering, moving smoothly.
+// Double notes that fit one hand position, with fingering, moving smoothly.
 function dyadTask(ctx, count) {
-  const st = ctx.state;
+  const P = prof(ctx), st = ctx.state;
   let moved = false;
   if (st.p == null || (st.n >= 4 && Math.random() < 0.35)) {
-    st.p = choosePos(ctx, range(0, MAX_THUMB), st.p); st.n = 0; st.last = null; moved = true;
+    st.p = choosePos(ctx, range(0, maxP(P)), st.p); st.n = 0; st.last = null; moved = true;
   }
   const elems = [];
   for (let i = 0; i < count; i++) {
     const cand = [];
     for (let lo = st.p; lo <= st.p + 2; lo++) for (const d of [2, 3, 4]) if (lo + d <= st.p + 4) cand.push([lo, lo + d]);
-    const w = cand.map(([a, b]) => (st.last == null ? 1 : [0.3, 3, 2, 1][Math.min(3, Math.abs(a - st.last))]) * diff(ctx, KEYS[a] + "+" + KEYS[b]));
+    const w = cand.map(([a, b]) => (st.last == null ? 1 : [0.3, 3, 2, 1][Math.min(3, Math.abs(a - st.last))]) * diff(ctx, P.keys[a] + "+" + P.keys[b]));
     const [a, b] = weighted(cand, w);
     st.last = a; st.n++;
-    elems.push({ keys: [KEYS[a], KEYS[b]], item: KEYS[a] + "+" + KEYS[b], finger: [a - st.p + 1, b - st.p + 1] });
+    elems.push({ keys: [P.keys[a], P.keys[b]], item: P.keys[a] + "+" + P.keys[b], finger: [P.f(a, st.p), P.f(b, st.p)] });
   }
-  return { pos: { thumb: st.p, moved }, elems, sub: `Thumb on <b>${KEYS[st.p]}</b> · both notes together, fingers written above` };
+  return { pos: { thumb: st.p, moved, fingers: fingerMap(P, st.p) }, elems,
+    sub: `Thumb on <b>${P.thumb(st.p)}</b> · both notes together, fingers written above` };
 }
-
-export const positionKeys = p => KEYS.slice(p, p + 5);
 
 // 4.1: one note per bar, played on all 4 beats — pure timing, nothing else to think about.
 function repeatTask(ctx) {
@@ -681,7 +776,7 @@ function repeatTask(ctx) {
   const p = choosePos(ctx, options);
   const moved = ctx.state.p !== p; ctx.state.p = p;
   const j = nextInPos(ctx, p, null), k = KEYS[j], f = j - p + 1;
-  return { pos: { thumb: p, moved }, elems: [0, 1, 2, 3].map(i => ({ keys: [k], item: k, finger: i === 0 ? f : null })),
+  return { pos: { thumb: p, moved, fingers: fingerMap(RP, p) }, elems: [0, 1, 2, 3].map(i => ({ keys: [k], item: k, finger: i === 0 ? f : null })),
     sub: `Thumb on <b>${KEYS[p]}</b> · the same note 4 times` };
 }
 
@@ -705,7 +800,8 @@ function beatDemo(h, root, { bpm, timeSig }) {
 
 function range(a, b) { const r = []; for (let i = a; i <= b; i++) r.push(i); return r; }
 
-function staffAndKb(h, { notes = null, elems = null, timeSig = false, mark = [], interactive = false }) {
+function staffAndKb(h, { notes = null, elems = null, timeSig = false, mark = [], interactive = false, clef = "treble" }) {
+  const MAP = byClef(clef);
   const card = document.createElement("div");
   card.className = "card staff";
   h.appendChild(card);
@@ -714,16 +810,16 @@ function staffAndKb(h, { notes = null, elems = null, timeSig = false, mark = [],
     card.innerHTML = "";
     const svg = svgEl("0 0 300 180");
     card.appendChild(svg);
-    groups = drawMeasure(svg, list.map(e => ({ steps: e.keys.map(k => TREBLE.find(t => t.key === k).step), finger: e.finger })), { timeSig });
+    groups = drawMeasure(svg, list.map(e => ({ steps: e.keys.map(k => MAP[k].step), finger: e.finger })), { timeSig, clef });
   };
   drawElems(elems || notes.map(k => ({ keys: [k] })));
-  const v = kbVisual(h, { lo: 57, hi: 84, labels: interactive ? "none" : "c", info: true,
+  const v = kbVisual(h, { lo: clef === "bass" ? 36 : 57, hi: clef === "bass" ? 62 : 84, labels: interactive ? "none" : "c", info: true,
     mark: kb => { mark.forEach(m => kb.set(m, "target")); } });
   let off = () => {};
   if (interactive) {
     off = onNote(m => {
       const k = nameOf(m);
-      if (TREBLE.some(t => t.key === k)) drawElems([{ keys: [k] }]);
+      if (MAP[k]) drawElems([{ keys: [k] }]);
     });
   }
   return { groups, cleanup: () => { off(); v.cleanup(); } };
