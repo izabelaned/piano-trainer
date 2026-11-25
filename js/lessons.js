@@ -1,5 +1,5 @@
 // Lesson content: teaching steps + exercise levels.
-import { LETTERS, SIZES, MIDDLE_C, TREBLE, keysOfLetter, nameOf, isWhite, letterOf, midiOf, FINGER_NAMES } from "./music.js";
+import { LETTERS, SIZES, MIDDLE_C, TREBLE, BASS, byClef, keysOfLetter, nameOf, isWhite, letterOf, midiOf, FINGER_NAMES } from "./music.js";
 import { Keyboard } from "./keyboard.js";
 import { onNote, connectMidi, onMidiStatus, midiStatusText } from "./input.js";
 import { drawStaff, drawNote, svgEl, el, yOf, drawMeasure, colorChord } from "./staff.js";
@@ -34,16 +34,38 @@ function kbVisual(host, { lo = 48, hi = 72, labels = "none", mark = null, info =
 }
 
 
-function staffVisual(host, notes, { clef = true, numbers = false, width = 360 } = {}) {
+function staffVisual(host, notes, { clef = true, numbers = false, width = 360, mark = "B" } = {}) {
   const svg = svgEl(`0 40 ${width} 172`);
   drawStaff(svg, { x1: 6, x2: width - 6, clef });
   if (numbers) for (let i = 0; i < 5; i++) el("text", { x: width - 14, y: yOf(i * 2) + 4, "font-size": 10, fill: "#7a746b", "text-anchor": "middle" }, svg).textContent = i + 1;
+  const MAP = byClef(clef);
   const x0 = clef ? 92 : 50, dx = Math.min(36, (width - x0 - 30) / Math.max(1, notes.length - 1));
   notes.forEach((key, i) => {
-    const n = TREBLE.find(t => t.key === key), x = x0 + i * dx;
-    const c = n.letter === "B" ? "#3d5a80" : "#1d1b18";
+    const n = MAP[key], x = x0 + i * dx;
+    const c = (mark === "B" ? n.letter === "B" : key === mark) ? "#3d5a80" : "#1d1b18";
     drawNote(svg, n.step, x, { color: c, stem: false });
     el("text", { x, y: 182, "text-anchor": "middle", "font-size": 13, "font-weight": 700, fill: c }, svg).textContent = key;
+  });
+  const card = document.createElement("div");
+  card.className = "card staff";
+  card.appendChild(svg);
+  host.appendChild(card);
+  return {};
+}
+
+// Treble staff on top, bass staff below, joined — the "grand staff". notes: [{ key, clef }]
+function grandStaff(host, notes = [], { width = 360 } = {}) {
+  const svg = svgEl(`0 40 ${width} 270`);
+  const top = el("g", {}, svg), bot = el("g", { transform: "translate(0 120)" }, svg);
+  drawStaff(top, { x1: 14, x2: width - 6, clef: "treble" });
+  drawStaff(bot, { x1: 14, x2: width - 6, clef: "bass" });
+  el("line", { x1: 14, x2: 14, y1: yOf(8), y2: yOf(0) + 120, stroke: "#1d1b18", "stroke-width": 2 }, svg);
+  const x0 = 110, dx = Math.min(44, (width - x0 - 30) / Math.max(1, notes.length - 1));
+  notes.forEach((n, i) => {
+    const x = x0 + i * dx, g = n.clef === "bass" ? bot : top, info = byClef(n.clef)[n.key];
+    const c = n.key === "C4" ? "#3d5a80" : "#1d1b18";
+    drawNote(g, info.step, x, { color: c, stem: false });
+    el("text", { x, y: n.clef === "bass" ? yOf(info.step) + 120 + 26 : yOf(info.step) - 14, "text-anchor": "middle", "font-size": 12, "font-weight": 700, fill: c }, svg).textContent = n.key;
   });
   const card = document.createElement("div");
   card.className = "card staff";
@@ -421,6 +443,61 @@ export const LESSONS = [
         make: ctx => patternTask(ctx), itemKeys: () => KEYS },
       { id: "5.6", type: "staff", tempo: true, bpm: 54, tempoWord: "Lento", title: "Double notes · Lento", desc: "4 double notes per bar.", tasks: 7, pass: { maxMs: 200 },
         make: ctx => dyadTask(ctx, 4), itemKeys: () => DYADS },
+    ],
+  },
+  {
+    id: "6",
+    title: "Bass clef",
+    blurb: "The left hand's staff: the F clef, G B D F A, A C E G, and the grand staff.",
+    steps: [
+      {
+        title: "Two clefs, two hands",
+        html: `<p>Piano music uses <b>two staves</b>: the <b>treble clef</b> on top (usually the right hand) and the <b>bass clef</b> below (usually the left hand). Together they make the <b>grand staff</b>.</p>
+               <p><b>Middle C (C4)</b> sits right between them: one ledger line <b>below</b> the treble staff, or one ledger line <b>above</b> the bass staff — it's the same key.</p>`,
+        visual: h => grandStaff(h, [{ key: "C4", clef: "treble" }, { key: "C4", clef: "bass" }]),
+      },
+      {
+        title: "The bass clef",
+        html: `<p>The bass clef is also called the <b>F clef</b>. Its two dots sit around <b>line 4</b> (from the bottom), and that line is <b>F3</b> — the F below middle C.</p>
+               <p>Like before, every step up — line, space, line — is the next letter.</p>`,
+        visual: h => staffVisual(h, ["F3"], { clef: "bass", mark: "F3" }),
+      },
+      {
+        title: "Line notes: G B D F A",
+        html: `<p>The 5 lines, bottom to top, are <b>G B D F A</b>.</p>
+               <p>Remember it as <i>"<b>G</b>ood <b>B</b>oys <b>D</b>o <b>F</b>ine <b>A</b>lways"</i>.</p>`,
+        visual: h => staffVisual(h, ["G2", "B2", "D3", "F3", "A3"], { clef: "bass", mark: "-" }),
+      },
+      {
+        title: "Space notes: A C E G",
+        html: `<p>The 4 spaces, bottom to top, are <b>A C E G</b>.</p>
+               <p>Remember it as <i>"<b>A</b>ll <b>C</b>ows <b>E</b>at <b>G</b>rass"</i>.</p>`,
+        visual: h => staffVisual(h, ["A2", "C3", "E3", "G3"], { clef: "bass", mark: "-" }),
+      },
+      {
+        title: "Same place, different note",
+        html: `<p>Careful: the same spot means a <b>different note</b> in each clef. The bottom line is <b>E</b> in treble but <b>G</b> in bass.</p>
+               <p>A handy trick: a bass note is <b>two letters later</b> than the treble note in the same place — E→G, F→A, G→B…</p>`,
+        visual: h => { staffVisual(h, ["E4", "F4", "G4", "A4"], { mark: "-" }); staffVisual(h, ["G2", "A2", "B2", "C3"], { clef: "bass", mark: "-" }); return {}; },
+      },
+      {
+        title: "Ledger lines",
+        html: `<p>Above the bass staff: <b>B3</b> sits just above the top line, <b>C4 (middle C)</b> is on a ledger line, <b>D4</b> sits above it.</p>
+               <p>Below: <b>F2</b> hangs under the bottom line, <b>E2</b> is on a ledger line, <b>D2</b> hangs under it.</p>`,
+        visual: h => staffVisual(h, ["D2", "E2", "F2", "B3", "C4", "D4"], { clef: "bass", mark: "C4" }),
+      },
+      {
+        title: "The full map: D2 → D4",
+        html: `<p>All 15 notes you'll practise. Landmarks: <b>F3</b> (the clef's line), <b>D3</b> on the middle line, and <b>middle C</b> on the ledger line above.</p>`,
+        visual: h => { staffVisual(h, BASS.slice(0, 7).map(n => n.key), { clef: "bass", mark: "F3" }); staffVisual(h, BASS.slice(7).map(n => n.key), { clef: "bass", mark: "C4" }); return {}; },
+      },
+    ],
+    levels: [
+      { id: "6.1", type: "notes", clef: "bass", title: "Line notes", desc: "G B D F A only.", pass: { maxMs: 1000 }, keys: ["G2", "B2", "D3", "F3", "A3"] },
+      { id: "6.2", type: "notes", clef: "bass", title: "Space notes", desc: "A C E G only.", pass: { maxMs: 1000 }, keys: ["A2", "C3", "E3", "G3"] },
+      { id: "6.3", type: "notes", clef: "bass", title: "The whole staff", desc: "G2 to A3, lines and spaces.", keys: BASS.filter(n => n.step >= 0 && n.step <= 8).map(n => n.key) },
+      { id: "6.4", type: "notes", clef: "bass", title: "With ledger lines", desc: "Full range D2 to D4.", keys: BASS.map(n => n.key) },
+      { id: "6.5", type: "notes", clef: "bass", optional: true, title: "60-second challenge", desc: "How many can you name in a minute? Optional. Pass: 25.", keys: BASS.map(n => n.key), timed: true },
     ],
   },
 ];

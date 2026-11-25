@@ -1,6 +1,6 @@
 // Lesson 2 exercise: see a note on the treble staff, name it.
 import { store, save, exState } from "./store.js";
-import { LETTERS, TREBLE_BY_KEY } from "./music.js";
+import { LETTERS, byClef } from "./music.js";
 import { drawStaff, drawNote, svgEl } from "./staff.js";
 import { pick, topHard, finishRound } from "./engine.js";
 import { renderResults, sec } from "./results.js";
@@ -10,6 +10,7 @@ const lab = L => L;
 const nm = key => lab(key[0]) + key.slice(1);
 
 export function runNotesExercise(root, level, nav) {
+  const MAP = byClef(level.clef), clef = level.clef || true;
   const es = exState(level.id);
   let timer = null, alive = true;
 
@@ -52,7 +53,7 @@ export function runNotesExercise(root, level, nav) {
     let cur, t0, locked = true, noteG = null;
     function draw(color) {
       if (noteG) noteG.remove();
-      noteG = drawNote(svg, TREBLE_BY_KEY[cur].step, 190, { color });
+      noteG = drawNote(svg, MAP[cur].step, 190, { color });
     }
     function show() {
       locked = false;
@@ -63,7 +64,7 @@ export function runNotesExercise(root, level, nav) {
         q(".bar > div").style.width = (round.i / size * 100) + "%";
       }
       cur = pick(es, level.keys, round.prev); round.prev = cur;
-      svg.innerHTML = ""; noteG = null; drawStaff(svg); draw();
+      svg.innerHTML = ""; noteG = null; drawStaff(svg, { clef }); draw();
       t0 = performance.now();
     }
     function answer(L, btn) {
@@ -88,7 +89,7 @@ export function runNotesExercise(root, level, nav) {
       const score = level.timed ? round.log.filter(r => r.errs === 0).length : null;
       const res = finishRound(es, round.log, { focus: round.focus, score, criteria: nav.criteria });
       save();
-      renderResults(root, { es, res, label: nm, itemKeys: level.keys, extraInsights: notesInsights,
+      renderResults(root, { es, res, label: nm, itemKeys: level.keys, extraInsights: per => notesInsights(per, MAP),
         unitWord: "correct", onNext: startRound, onHome: nav.home, nav, nextTitle: level.timed ? "Try again" : "Another round" });
     }
     const startTimer = () => {
@@ -113,21 +114,22 @@ export function runNotesExercise(root, level, nav) {
   return () => { alive = false; clearInterval(timer); roundCleanup(); };
 }
 
-function notesInsights(per) {
+function notesInsights(per, MAP) {
   const out = [];
   const timed = Object.keys(per).filter(k => per[k].avg != null);
-  const zone = k => { const s = TREBLE_BY_KEY[k].step; return s < 0 ? "below the staff" : s > 8 ? "above the staff" : "on the staff"; };
+  const zone = k => { const s = MAP[k].step; return s < 0 ? "below the staff" : s > 8 ? "above the staff" : "on the staff"; };
   const z = {};
   timed.forEach(k => (z[zone(k)] = z[zone(k)] || []).push(per[k].avg));
   const za = Object.entries(z).map(([n, v]) => [n, v.reduce((a, b) => a + b, 0) / v.length]).sort((a, b) => b[1] - a[1]);
   if (za.length >= 2 && za[0][1] > za[za.length - 1][1] * 1.25)
     out.push(`Notes ${za[0][0]} are your slowest zone (${sec(za[0][1])} vs ${sec(za[za.length - 1][1])} ${za[za.length - 1][0]}).`);
   const ls = { line: [], space: [] };
-  timed.forEach(k => { const s = TREBLE_BY_KEY[k].step; if (s >= 0 && s <= 8) ls[s % 2 === 0 ? "line" : "space"].push(per[k].avg); });
+  timed.forEach(k => { const s = MAP[k].step; if (s >= 0 && s <= 8) ls[s % 2 === 0 ? "line" : "space"].push(per[k].avg); });
   if (ls.line.length && ls.space.length) {
     const al = ls.line.reduce((a, b) => a + b, 0) / ls.line.length, as = ls.space.reduce((a, b) => a + b, 0) / ls.space.length;
+    const names = MAP === byClef("bass") ? ["G B D F A", "A C E G"] : ["E G B D F", "F A C E"];
     if (Math.max(al, as) > Math.min(al, as) * 1.2)
-      out.push(`${al > as ? "Line notes (E G B D F)" : "Space notes (F A C E)"} are slower for you (${sec(Math.max(al, as))} vs ${sec(Math.min(al, as))}).`);
+      out.push(`${al > as ? "Line notes (" + names[0] + ")" : "Space notes (" + names[1] + ")"} are slower for you (${sec(Math.max(al, as))} vs ${sec(Math.min(al, as))}).`);
   }
   return out;
 }

@@ -2,6 +2,7 @@
 const NS = "http://www.w3.org/2000/svg";
 export const SP = 12, BOTTOM = 124;
 export const yOf = s => BOTTOM - s * SP / 2;
+const BASS_Y = 36;   // vertical tweak for the F-clef glyph (its dots must sit around line 4)
 
 export function el(tag, attrs, parent) {
   const e = document.createElementNS(NS, tag);
@@ -15,7 +16,11 @@ export function drawStaff(svg, { x1 = 10, x2 = 290, clef = true } = {}) {
     const y = yOf(i * 2);
     el("line", { x1, x2, y1: y, y2: y, stroke: "#1d1b18", "stroke-width": 1.2, class: "staffline", "data-i": i }, svg);
   }
-  if (clef) {
+  if (clef === "bass") {
+    const t = el("text", { x: x1 + 6, y: yOf(6) + BASS_Y, "font-size": 70, class: "clef",
+      "font-family": "'Noto Music','Bravura','Segoe UI Symbol','Apple Symbols',serif", fill: "#1d1b18" }, svg);
+    t.textContent = "\u{1D122}";
+  } else if (clef) {
     const t = el("text", { x: x1 + 4, y: yOf(2) + 13, "font-size": 70, class: "clef",
       "font-family": "'Noto Music','Bravura','Segoe UI Symbol','Apple Symbols',serif", fill: "#1d1b18" }, svg);
     t.textContent = "\u{1D11E}";
@@ -84,8 +89,8 @@ export function drawBar(svg, x, final = false) {
 }
 
 // A bar of notes/chords. elems: [{ steps:[...], finger }]. Returns chord groups.
-export function drawMeasure(svg, elems, { timeSig = false, width = 300 } = {}) {
-  drawStaff(svg, { x1: 6, x2: width - 6 });
+export function drawMeasure(svg, elems, { timeSig = false, width = 300, clef = true } = {}) {
+  drawStaff(svg, { x1: 6, x2: width - 6, clef });
   const x0 = timeSig ? 100 : 82;
   if (timeSig) drawTimeSig(svg, 66);
   if (elems.length === 1) return [drawChord(svg, elems[0].steps, (x0 + width) / 2 + 10, { finger: elems[0].finger })];

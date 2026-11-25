@@ -42,3 +42,15 @@ export const TREBLE = [];
   }
 })();
 export const TREBLE_BY_KEY = Object.fromEntries(TREBLE.map(n => [n.key, n]));
+
+// Bass-clef notes D2..D4 with their staff step (diatonic steps above G2, the bottom line).
+export const BASS = [];
+(function () {
+  let li = 1, oct = 2;                         // start at D2
+  for (let s = -3; s <= 11; s++) {
+    BASS.push({ letter: LETTERS[li], octave: oct, step: s, key: LETTERS[li] + oct });
+    if (++li === 7) { li = 0; oct++; }
+  }
+})();
+export const BASS_BY_KEY = Object.fromEntries(BASS.map(n => [n.key, n]));
+export const byClef = clef => (clef === "bass" ? BASS_BY_KEY : TREBLE_BY_KEY);
