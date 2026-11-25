@@ -291,3 +291,12 @@ body.midi-on .level.rec .sc { display:block !important; margin:4px 0 0; color:va
   html:fullscreen body.can-fs .fsbtn { display:none; }
 }
 .bpmtag { display:table; margin-left:auto; margin-right:auto; font-weight:700; color:var(--accent); background:#e8eef5; border-radius:10px; padding:3px 10px; margin-bottom:6px; }
+
+/* tempo words */
+.tempi { display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:8px; margin:8px 0; }
+.tempo { border:1px solid var(--line); border-radius:12px; padding:8px 10px; display:flex; flex-direction:column; gap:2px; }
+.tempo b { font-size:1.15rem; font-style:italic; font-family:Georgia, serif; }
+.tempo span { font-size:.9rem; } .tempo small { color:var(--muted); font-size:.75rem; }
+.tempo button { align-self:flex-start; margin-top:4px; }
+.tempo.on { border-color:var(--accent); background:#eef3f8; }
+.bpmtag b { font-style:italic; font-family:Georgia, serif; font-size:1.05rem; }

@@ -21,6 +21,7 @@ function load() {
     d.mig4 = s.mig4;
     d.mig5 = s.mig5;
     d.mig6 = s.mig6;
+    d.mig7 = s.mig7;
   }
   // Tempo levels moved to Lesson 4: old 3.5 → 4.2, old 3.6 (double notes) → 3.5, old 3.7 → 4.4
   if (!d.mig4) {
@@ -46,6 +47,12 @@ function load() {
     [["3.5", "4.1"], ["3.6", "4.2"], ["3.7", "4.3"], ["3.8", "4.4"]].forEach(([a, b]) => { if (ex[a]) { ex[b] = ex[a]; delete ex[b].critV; delete ex[a]; } });
     if (d.lessonSeen["4"]) { d.lessonSeen["5"] = true; delete d.lessonSeen["4"]; }
     d.mig6 = true;
+  }
+  // Tempo lesson rebuilt with tempo words: old 5.4 (double notes in time) → 5.6
+  if (!d.mig7) {
+    if (d.ex["5.4"]) { d.ex["5.6"] = d.ex["5.4"]; delete d.ex["5.6"].critV; delete d.ex["5.4"]; }
+    ["5.1", "5.2", "5.3"].forEach(k => { if (d.ex[k]) delete d.ex[k].critV; });
+    d.mig7 = true;
   }
   // Carry over stats from the first version of the note trainer.
   try {

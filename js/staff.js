@@ -91,6 +91,8 @@ export function drawMeasure(svg, elems, { timeSig = false, width = 300 } = {}) {
   if (elems.length === 1) return [drawChord(svg, elems[0].steps, (x0 + width) / 2 + 10, { finger: elems[0].finger })];
   const end = width - 26, dx = (end - x0) / elems.length;
   const groups = elems.map((e, i) => drawChord(svg, e.steps, x0 + dx * (i + 0.45), { finger: e.finger }));
+  // in 4/4 every 4 notes make a bar
+  if (timeSig) for (let i = 4; i < elems.length; i += 4) drawBar(svg, x0 + dx * (i - 0.08));
   drawBar(svg, width - 12, true);
   return groups;
 }

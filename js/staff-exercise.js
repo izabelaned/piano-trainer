@@ -77,7 +77,7 @@ export function runStaffExercise(root, level, nav) {
         q(".ptxt").textContent = (round.i + 1) + " / " + tasksPerRound;
         q(".bar > div").style.width = (round.i / tasksPerRound * 100) + "%";
       }
-      q(".sub").innerHTML = (tempo ? `<div class="bpmtag">♩ = ${level.bpm || 60} bpm</div>` : "") + (task.sub || "");
+      q(".sub").innerHTML = (tempo ? `<div class="bpmtag">${level.tempoWord ? `<b>${level.tempoWord}</b> · ` : ""}♩ ≈ ${level.bpm || 60}</div>` : "") + (task.sub || "");
       draw();
       if (!tempo) { colorChord(groups[0], task.elems.length > 1 ? C.cur : C.ink); fb("", "&nbsp;"); tLast = performance.now(); }
       else { locked = true; fb("", round.i === 0 ? "Press Start, listen to 4 clicks, then play one note per click." : "&nbsp;"); }

@@ -3,10 +3,18 @@ import { LETTERS, SIZES, MIDDLE_C, TREBLE, keysOfLetter, nameOf, isWhite, letter
 import { Keyboard } from "./keyboard.js";
 import { onNote, connectMidi, onMidiStatus, midiStatusText } from "./input.js";
 import { drawStaff, drawNote, svgEl, el, yOf, drawMeasure, colorChord } from "./staff.js";
-import { schedule, audio, stopClicks } from "./metronome.js";
+import { schedule, audio, stopClicks, playMelody } from "./metronome.js";
 import { store, save } from "./store.js";
 import { pick, difficulty } from "./engine.js";
 import { handsSvg, handWords } from "./hands.js";
+
+// Tempo words for Lesson 5 (defined first: the lesson text uses them)
+const TEMPI = [
+  { name: "Lento", meaning: "slow", range: "45–60", bpm: 54 },
+  { name: "Andante", meaning: "at a walking pace", range: "76–108", bpm: 80 },
+  { name: "Moderato", meaning: "moderate", range: "108–120", bpm: 108 },
+  { name: "Allegro", meaning: "fast, lively", range: "120–156", bpm: 126 },
+];
 
 // ---------- step visual helpers ----------
 function kbVisual(host, { lo = 48, hi = 72, labels = "none", mark = null, info = true } = {}) {
@@ -360,51 +368,99 @@ export const LESSONS = [
   },
   {
     id: "5",
-    title: "Playing in time",
-    blurb: "The beat, bars in 4/4, and playing with a metronome — slow first, then a bit faster.",
+    title: "Tempo",
+    blurb: "The beat, bars in 4/4, and the classic tempo words: Lento, Andante, Moderato, Allegro.",
     steps: [
       {
         title: "The beat",
         html: `<p>Music has a steady pulse called the <b>beat</b> — what you tap your foot to.</p>
-               <p>A <b>metronome</b> clicks the beat for you. Its speed is in <b>bpm</b> (beats per minute): 50 bpm is calm, a bit more than one second per click.</p>
-               <button class="primary ghost" data-act="hear">▶ Hear 50 bpm</button>`,
-        visual: (h, root) => beatDemo(h, root, { bpm: 50, timeSig: false }),
+               <p>A <b>metronome</b> clicks the beat for you, always at the same speed.</p>
+               <button class="primary ghost" data-act="hear">▶ Hear a slow beat</button>`,
+        visual: (h, root) => beatDemo(h, root, { bpm: 54, timeSig: false }),
       },
       {
         title: "Bars and 4/4",
         html: `<p>Music is split into <b>bars</b> (measures), separated by bar lines. <b>4/4</b> at the start means <b>4 beats in every bar</b>.</p>
-               <p>A filled note with a stem is a <b>quarter note</b>: it lasts one beat. So a bar of 4/4 holds 4 quarter notes — count them “1, 2, 3, 4”.</p>
+               <p>A filled note with a stem is a <b>quarter note</b>: it lasts one beat. A bar of 4/4 holds 4 quarter notes — count them “1, 2, 3, 4”.</p>
                <button class="primary ghost" data-act="hear">▶ Hear it</button>`,
-        visual: (h, root) => beatDemo(h, root, { bpm: 50, timeSig: true }),
+        visual: (h, root) => beatDemo(h, root, { bpm: 54, timeSig: true }),
+      },
+      {
+        title: "Tempo words",
+        html: `<p>How fast the beat goes is the <b>tempo</b>. Composers write it in Italian, above the first bar:</p>
+               <div class="tempi">${TEMPI.map(t => `<div class="tempo"><b>${t.name}</b><span>${t.meaning}</span><small>about ${t.range} beats per minute</small>
+                 <button class="mini" data-tempo="${t.bpm}">▶ Hear</button></div>`).join("")}</div>
+               <p class="muted">The numbers are only a guide — the word tells you the character. Other words you'll meet: <i>Largo</i> (very slow), <i>Adagio</i> (slow, between Lento and Andante), <i>Presto</i> (very fast).</p>`,
+        visual: (h, root) => tempoDemo(h, root),
       },
       {
         title: "Count in, then play",
         html: `<p>Every bar starts with <b>4 clicks to count in</b>. Then play <b>one note on each click</b>.</p>
-               <ul class="ins"><li>During the count-in the <b>hand position lights up</b> on the keyboard — put your hand there.</li>
+               <ul class="ins"><li>During the count-in the <b>hand position lights up</b> — put your hand there.</li>
                <li>Keep your eyes <b>one note ahead</b> of your fingers.</li>
                <li>Missed a note? <b>Don't stop</b> — catch the next click.</li>
-               <li><b>Slow and correct</b> beats fast and wrong. Speed comes later on its own.</li></ul>`,
-        visual: h => staffAndKb(h, { elems: ["C4", "E4", "D4", "F4"].map(k => ({ keys: [k], finger: KEYS.indexOf(k) + 1 })), timeSig: true, mark: [60, 62, 64, 65, 67] }),
+               <li>In <b>Moderato</b> and <b>Allegro</b> you play a pattern you already know, so you can think about the beat, not the notes.</li></ul>`,
+        visual: h => staffAndKb(h, { elems: ["C4", "D4", "E4", "F4"].map((k, i) => ({ keys: [k], finger: i + 1 })), timeSig: true, mark: [60, 62, 64, 65, 67] }),
       },
       {
         title: "Two notes in time",
-        html: `<p>Double notes work the same way: <b>both notes together, on the click</b>.</p>
-               <p class="muted">Start this only once single notes in time feel calm.</p>`,
+        html: `<p>Double notes work the same way: <b>both notes together, on the click</b>. We do them in <b>Lento</b>.</p>`,
         visual: h => staffAndKb(h, { elems: [{ keys: ["C4", "E4"], finger: [1, 3] }, { keys: ["D4", "F4"], finger: [2, 4] }, { keys: ["E4", "G4"], finger: [3, 5] }, { keys: ["C4", "E4"], finger: [1, 3] }], timeSig: true, mark: [] }),
       },
     ],
     levels: [
-      { id: "5.1", type: "staff", tempo: true, bpm: 50, title: "Keep the beat", desc: "One note per bar, played 4 times on the clicks. 50 bpm.", tasks: 7,
+      { id: "5.1", type: "staff", tempo: true, bpm: 54, tempoWord: "Lento", title: "Keep the beat · Lento", desc: "One note per bar, played on all 4 clicks.", tasks: 7,
         make: ctx => repeatTask(ctx), itemKeys: () => KEYS },
-      { id: "5.2", type: "staff", tempo: true, bpm: 50, title: "Steps in time", desc: "4 notes in a five-finger position. 50 bpm.", tasks: 7,
+      { id: "5.2", type: "staff", tempo: true, bpm: 54, tempoWord: "Lento", title: "Steps in time · Lento", desc: "4 new notes per bar in a five-finger position.", tasks: 7,
         make: ctx => phraseTask(ctx, ["C4", "D4", "E4", "F4", "G4", "A4"]), itemKeys: () => KEYS },
-      { id: "5.3", type: "staff", tempo: true, bpm: 66, title: "A bit faster", desc: "Same as 5.2 at 66 bpm.", tasks: 7,
+      { id: "5.3", type: "staff", tempo: true, bpm: 80, tempoWord: "Andante", title: "Steps in time · Andante", desc: "The same at a walking pace.", tasks: 7,
         make: ctx => phraseTask(ctx, ["C4", "D4", "E4", "F4", "G4", "A4"]), itemKeys: () => KEYS },
-      { id: "5.4", type: "staff", tempo: true, bpm: 50, title: "Double notes in time", desc: "4 double notes per bar. 50 bpm.", tasks: 7, pass: { maxMs: 200 },
+      { id: "5.4", type: "staff", tempo: true, bpm: 108, tempoWord: "Moderato", title: "Up and down · Moderato", desc: "A known pattern: 1 2 3 4 · 5 4 3 2 in C or G position.", tasks: 8,
+        make: ctx => patternTask(ctx), itemKeys: () => KEYS },
+      { id: "5.5", type: "staff", tempo: true, bpm: 126, tempoWord: "Allegro", title: "Up and down · Allegro", desc: "The same pattern, fast and lively.", tasks: 8,
+        make: ctx => patternTask(ctx), itemKeys: () => KEYS },
+      { id: "5.6", type: "staff", tempo: true, bpm: 54, tempoWord: "Lento", title: "Double notes · Lento", desc: "4 double notes per bar.", tasks: 7, pass: { maxMs: 200 },
         make: ctx => dyadTask(ctx, 4), itemKeys: () => DYADS },
     ],
   },
 ];
+
+// ---------- Lesson 5 helpers ----------
+const EXAMPLE = ["C4", "D4", "E4", "F4", "G4", "F4", "E4", "D4"];
+
+// Tempo words step: each button plays the same little tune at that tempo.
+function tempoDemo(h, root) {
+  const { groups, cleanup } = staffAndKb(h, { elems: EXAMPLE.map(k => ({ keys: [k] })), timeSig: true, mark: [] });
+  let raf = null;
+  root.querySelectorAll("[data-tempo]").forEach(btn => btn.onclick = () => {
+    audio(); stopClicks(); cancelAnimationFrame(raf);
+    root.querySelectorAll(".tempo").forEach(t => t.classList.toggle("on", t.contains(btn)));
+    const { t0Perf, beatMs } = playMelody(EXAMPLE.map(k => midiOf(k[0], +k.slice(1))), +btn.dataset.tempo);
+    const tick = () => {
+      const b = Math.floor((performance.now() - t0Perf) / beatMs) - 4;
+      groups.forEach((g, i) => colorChord(g, i === b ? "#3d5a80" : "#1d1b18"));
+      if (b < EXAMPLE.length) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+  });
+  return { cleanup: () => { cancelAnimationFrame(raf); stopClicks(); cleanup(); } };
+}
+
+// 5.4 / 5.5: a pattern you know — up 1 2 3 4, then down 5 4 3 2 — so the tempo is the only challenge.
+function patternTask(ctx) {
+  const st = ctx.state;
+  if (st.p == null || st.up === false) {
+    if (st.p == null || Math.random() < 0.5) st.p = KEYS.indexOf(Math.random() < 0.5 ? "C4" : "G4");
+  }
+  const up = st.up = !st.up;
+  const idx = up ? [0, 1, 2, 3] : [4, 3, 2, 1];
+  const moved = up && st.lastP !== st.p; st.lastP = st.p;
+  return {
+    pos: { thumb: st.p, moved },
+    elems: idx.map(i => ({ keys: [KEYS[st.p + i]], item: KEYS[st.p + i], finger: i + 1 })),
+    sub: `Thumb on <b>${KEYS[st.p]}</b> · ${up ? "up: 1 2 3 4" : "down: 5 4 3 2"}`,
+  };
+}
 
 // ---------- Lesson 3 helpers ----------
 // Right hand only, so the range starts at middle C (B3 belongs to the left hand).
